@@ -1,0 +1,307 @@
+{% extends "base.html" %}
+
+{% block title %}Примеры бизнес-проектов - Бизнес Конструктор{% endblock %}
+
+{% block content %}
+<div class="examples-container">
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <!-- Баннер -->
+            <div class="examples-banner text-center py-5 mb-5" data-aos="fade-up">
+                <h1 class="display-4 fw-bold mb-4">Успешные бизнес-проекты</h1>
+                <p class="lead">Вдохновитесь реальными историями успеха наших клиентов</p>
+            </div>
+            
+            <!-- Фильтры -->
+            <div class="filters-container mb-5" data-aos="fade-up">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h4 class="mb-3">Фильтр проектов</h4>
+                        <div class="row">
+                            <div class="col-md-4 mb-3 mb-md-0">
+                                <label class="form-label">Тип бизнеса</label>
+                                <select class="form-select" id="typeFilter">
+                                    <option value="all" selected>Все типы</option>
+                                    <option value="retail">Розничная торговля</option>
+                                    <option value="service">Сфера услуг</option>
+                                    <option value="production">Производство</option>
+                                    <option value="online">Онлайн-бизнес</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-3 mb-md-0">
+                                <label class="form-label">Размер бизнеса</label>
+                                <select class="form-select" id="sizeFilter">
+                                    <option value="all" selected>Все размеры</option>
+                                    <option value="small">Малый</option>
+                                    <option value="medium">Средний</option>
+                                    <option value="large">Крупный</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Сортировка</label>
+                                <select class="form-select" id="sortFilter">
+                                    <option value="newest">Сначала новые</option>
+                                    <option value="oldest">Сначала старые</option>
+                                    <option value="budget-high">По бюджету (высокий-низкий)</option>
+                                    <option value="budget-low">По бюджету (низкий-высокий)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Примеры проектов -->
+            <div class="examples-grid mb-5">
+                <div class="row">
+                    <!-- Пример 1 -->
+                    <div class="col-lg-6 mb-4" data-aos="fade-up" data-type="retail" data-size="medium">
+                        <div class="example-card shadow-sm h-100">
+                            <div class="card-body p-0">
+                                <div class="example-image">
+                                    <img src="{{ url_for('static', filename='img/example-1.jpg') }}" alt="Сеть кофеен 'Энергия'" class="img-fluid">
+                                    <div class="example-tag">Розничная торговля</div>
+                                </div>
+                                <div class="example-content p-4">
+                                    <h3>Сеть кофеен "Энергия"</h3>
+                                    <div class="example-meta mb-3">
+                                        <span class="example-size">Средний бизнес</span>
+                                        <span class="example-budget">Бюджет: 2 500 000 ₽</span>
+                                        <span class="example-date">Декабрь 2024</span>
+                                    </div>
+                                    <p>Проект включал открытие сети из 3 кофеен в бизнес-центрах города. Особенностью проекта стало использование мобильного приложения для предзаказа и системы лояльности.</p>
+                                    
+                                    <h5 class="mt-4 mb-3">Включенные функции:</h5>
+                                    <div class="example-features">
+                                        <span class="feature-badge">Веб-сайт</span>
+                                        <span class="feature-badge">CRM система</span>
+                                        <span class="feature-badge">Маркетинговый план</span>
+                                    </div>
+                                    
+                                    <div class="example-results mt-4">
+                                        <div class="row">
+                                            <div class="col-4 text-center">
+                                                <h5>Окупаемость</h5>
+                                                <div class="result-value">8 мес.</div>
+                                            </div>
+                                            <div class="col-4 text-center">
+                                                <h5>ROI</h5>
+                                                <div class="result-value">215%</div>
+                                            </div>
+                                            <div class="col-4 text-center">
+                                                <h5>Прибыль</h5>
+                                                <div class="result-value">+45%</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Пример 2 -->
+                    <div class="col-lg-6 mb-4" data-aos="fade-up" data-aos-delay="100" data-type="service" data-size="small">
+                        <div class="example-card shadow-sm h-100">
+                            <div class="card-body p-0">
+                                <div class="example-image">
+                                    <img src="{{ url_for('static', filename='img/example-2.jpg') }}" alt="Салон красоты 'Эстетика'" class="img-fluid">
+                                    <div class="example-tag">Сфера услуг</div>
+                                </div>
+                                <div class="example-content p-4">
+                                    <h3>Салон красоты "Эстетика"</h3>
+                                    <div class="example-meta mb-3">
+                                        <span class="example-size">Малый бизнес</span>
+                                        <span class="example-budget">Бюджет: 1 200 000 ₽</span>
+                                        <span class="example-date">Октябрь 2024</span>
+                                    </div>
+                                    <p>Премиальный салон красоты в спальном районе города. Отличительной особенностью стал набор уникальных услуг и высокий уровень сервиса при доступных ценах.</p>
+                                    
+                                    <h5 class="mt-4 mb-3">Включенные функции:</h5>
+                                    <div class="example-features">
+                                        <span class="feature-badge">Веб-сайт</span>
+                                        <span class="feature-badge">Маркетинговый план</span>
+                                        <span class="feature-badge">Юридическое сопровождение</span>
+                                    </div>
+                                    
+                                    <div class="example-results mt-4">
+                                        <div class="row">
+                                            <div class="col-4 text-center">
+                                                <h5>Окупаемость</h5>
+                                                <div class="result-value">12 мес.</div>
+                                            </div>
+                                            <div class="col-4 text-center">
+                                                <h5>ROI</h5>
+                                                <div class="result-value">180%</div>
+                                            </div>
+                                            <div class="col-4 text-center">
+                                                <h5>Прибыль</h5>
+                                                <div class="result-value">+32%</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Пример 3 -->
+                    <div class="col-lg-6 mb-4" data-aos="fade-up" data-type="production" data-size="large">
+                        <div class="example-card shadow-sm h-100">
+                            <div class="card-body p-0">
+                                <div class="example-image">
+                                    <img src="{{ url_for('static', filename='img/example-3.jpg') }}" alt="Мебельная фабрика 'Комфорт'" class="img-fluid">
+                                    <div class="example-tag">Производство</div>
+                                </div>
+                                <div class="example-content p-4">
+                                    <h3>Мебельная фабрика "Комфорт"</h3>
+                                    <div class="example-meta mb-3">
+                                        <span class="example-size">Крупный бизнес</span>
+                                        <span class="example-budget">Бюджет: 8 500 000 ₽</span>
+                                        <span class="example-date">Август 2024</span>
+                                    </div>
+                                    <p>Современное производство мебели с использованием инновационных материалов и технологий. Полный цикл от разработки дизайна до доставки и сборки.</p>
+                                    
+                                    <h5 class="mt-4 mb-3">Включенные функции:</h5>
+                                    <div class="example-features">
+                                        <span class="feature-badge">Веб-сайт</span>
+                                        <span class="feature-badge">CRM система</span>
+                                        <span class="feature-badge">Логистика</span>
+                                        <span class="feature-badge">Юридическое сопровождение</span>
+                                        <span class="feature-badge">Бухгалтерия</span>
+                                    </div>
+                                    
+                                    <div class="example-results mt-4">
+                                        <div class="row">
+                                            <div class="col-4 text-center">
+                                                <h5>Окупаемость</h5>
+                                                <div class="result-value">24 мес.</div>
+                                            </div>
+                                            <div class="col-4 text-center">
+                                                <h5>ROI</h5>
+                                                <div class="result-value">320%</div>
+                                            </div>
+                                            <div class="col-4 text-center">
+                                                <h5>Прибыль</h5>
+                                                <div class="result-value">+65%</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Пример 4 -->
+                    <div class="col-lg-6 mb-4" data-aos="fade-up" data-aos-delay="100" data-type="online" data-size="medium">
+                        <div class="example-card shadow-sm h-100">
+                            <div class="card-body p-0">
+                                <div class="example-image">
+                                    <img src="{{ url_for('static', filename='img/example-4.jpg') }}" alt="Онлайн-маркетплейс 'Эко-Маркет'" class="img-fluid">
+                                    <div class="example-tag">Онлайн-бизнес</div>
+                                </div>
+                                <div class="example-content p-4">
+                                    <h3>Онлайн-маркетплейс "Эко-Маркет"</h3>
+                                    <div class="example-meta mb-3">
+                                        <span class="example-size">Средний бизнес</span>
+                                        <span class="example-budget">Бюджет: 3 800 000 ₽</span>
+                                        <span class="example-date">Май 2024</span>
+                                    </div>
+                                    <p>Платформа для продажи экологически чистых продуктов от фермерских хозяйств. Проект включал разработку маркетплейса с личными кабинетами, системой рейтингов и отзывов.</p>
+                                    
+                                    <h5 class="mt-4 mb-3">Включенные функции:</h5>
+                                    <div class="example-features">
+                                        <span class="feature-badge">Веб-сайт</span>
+                                        <span class="feature-badge">CRM система</span>
+                                        <span class="feature-badge">Маркетинговый план</span>
+                                        <span class="feature-badge">Логистика</span>
+                                    </div>
+                                    
+                                    <div class="example-results mt-4">
+                                        <div class="row">
+                                            <div class="col-4 text-center">
+                                                <h5>Окупаемость</h5>
+                                                <div class="result-value">15 мес.</div>
+                                            </div>
+                                            <div class="col-4 text-center">
+                                                <h5>ROI</h5>
+                                                <div class="result-value">240%</div>
+                                            </div>
+                                            <div class="col-4 text-center">
+                                                <h5>Прибыль</h5>
+                                                <div class="result-value">+52%</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Индикатор загрузки -->
+                <div class="text-center mt-3 mb-5" id="loadingMore" style="display: none;">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Загрузка...</span>
+                    </div>
+                    <p class="mt-2">Загрузка примеров...</p>
+                </div>
+                
+                <!-- Кнопка "Показать еще" -->
+                <div class="text-center mt-4">
+                    <button class="btn btn-outline-primary btn-lg" id="loadMoreBtn">
+                        <i class="fas fa-plus-circle me-2"></i>Показать еще
+                    </button>
+                </div>
+            </div>
+            
+            <!-- CTA -->
+            <div class="cta-examples text-center py-5 mb-4" data-aos="fade-up">
+                <div class="card shadow-sm">
+                    <div class="card-body p-5">
+                        <h2 class="mb-4">Готовы присоединиться к успешным предпринимателям?</h2>
+                        <p class="lead mb-4">Создайте свой бизнес-проект прямо сейчас и получите детальный расчет стоимости</p>
+                        <a href="{{ url_for('constructor') }}" class="btn btn-primary btn-lg">
+                            <i class="fas fa-rocket me-2"></i>Начать свой проект
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Обработчик кнопки "Показать еще"
+        document.getElementById('loadMoreBtn').addEventListener('click', function() {
+            // Показываем индикатор загрузки
+            const loadingIndicator = document.getElementById('loadingMore');
+            loadingIndicator.style.display = 'block';
+            
+            // Имитируем загрузку данных
+            setTimeout(function() {
+                // Скрываем индикатор загрузки
+                loadingIndicator.style.display = 'none';
+                
+                // Показываем уведомление
+                alert('В демо-версии доступно только 4 примера. Полная версия будет содержать больше кейсов!');
+            }, 1500);
+        });
+        
+        // Обработчики фильтров
+        const typeFilter = document.getElementById('typeFilter');
+        const sizeFilter = document.getElementById('sizeFilter');
+        const sortFilter = document.getElementById('sortFilter');
+        
+        function applyFilters() {
+            alert('Фильтрация будет доступна в полной версии сайта!');
+        }
+        
+        typeFilter.addEventListener('change', applyFilters);
+        sizeFilter.addEventListener('change', applyFilters);
+        sortFilter.addEventListener('change', applyFilters);
+    });
+</script>
+{% endblock %} 

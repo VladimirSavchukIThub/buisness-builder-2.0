@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+
+{% block title %}Главная - Бизнес Конструктор{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section py-5">
+    <div class="row align-items-center">
+        <div class="col-lg-6" data-aos="fade-right">
+            <h1 class="display-4 fw-bold mb-4 animate__animated animate__fadeInUp">Создайте свой бизнес с нуля</h1>
+            <p class="lead mb-4 animate__animated animate__fadeInUp animate__delay-1s">
+                Бизнес Конструктор — это инновационный инструмент для планирования и расчета стоимости вашего будущего бизнеса.
+                Выбирайте параметры, настраивайте функции и получайте точный расчет бюджета.
+            </p>
+            <div class="d-grid gap-2 d-md-flex justify-content-md-start animate__animated animate__fadeInUp animate__delay-2s">
+                <a href="{{ url_for('constructor') }}" class="btn btn-primary btn-lg px-4 me-md-2">Начать конструировать</a>
+                <a href="{{ url_for('examples') }}" class="btn btn-outline-secondary btn-lg px-4">Посмотреть примеры</a>
+            </div>
+        </div>
+        <div class="col-lg-6" data-aos="fade-left">
+            <img src="{{ url_for('static', filename='img/hero-image.svg') }}" class="img-fluid animate__animated animate__zoomIn" alt="Бизнес конструктор">
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="features-section py-5 mt-5">
+    <h2 class="text-center mb-5" data-aos="fade-up">Преимущества нашего конструктора</h2>
+    <div class="row g-4">
+        <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+            <div class="feature-card h-100">
+                <div class="feature-icon mb-4">
+                    <i class="fas fa-calculator"></i>
+                </div>
+                <h3>Точный расчет</h3>
+                <p>Алгоритм, учитывающий все параметры и особенности вашего бизнеса, обеспечивает максимально точный расчет стоимости.</p>
+            </div>
+        </div>
+        <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
+            <div class="feature-card h-100">
+                <div class="feature-icon mb-4">
+                    <i class="fas fa-lightbulb"></i>
+                </div>
+                <h3>Гибкость настройки</h3>
+                <p>Выбирайте любые комбинации типов бизнеса, размеров и дополнительных функций для создания индивидуального проекта.</p>
+            </div>
+        </div>
+        <div class="col-md-4" data-aos="fade-up" data-aos-delay="300">
+            <div class="feature-card h-100">
+                <div class="feature-icon mb-4">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <h3>Бизнес-аналитика</h3>
+                <p>Получайте не только стоимость, но и рекомендации по развитию и масштабированию вашего бизнеса.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- How it works -->
+<section class="how-it-works py-5 mt-5">
+    <h2 class="text-center mb-5" data-aos="fade-up">Как это работает</h2>
+    <div class="row">
+        <div class="col-lg-3 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="100">
+            <div class="step-card text-center">
+                <div class="step-number">1</div>
+                <h4 class="mt-4">Выберите тип бизнеса</h4>
+                <p>Розничная торговля, сфера услуг, производство или онлайн-бизнес</p>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="200">
+            <div class="step-card text-center">
+                <div class="step-number">2</div>
+                <h4 class="mt-4">Определите размер</h4>
+                <p>Малый, средний или крупный бизнес с различными масштабами операций</p>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="300">
+            <div class="step-card text-center">
+                <div class="step-number">3</div>
+                <h4 class="mt-4">Добавьте функции</h4>
+                <p>Выберите необходимые дополнительные опции и сервисы для вашего бизнеса</p>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="400">
+            <div class="step-card text-center">
+                <div class="step-number">4</div>
+                <h4 class="mt-4">Получите расчет</h4>
+                <p>Моментальный расчет стоимости и детальный отчет о вашем проекте</p>
+            </div>
+        </div>
+    </div>
+    <div class="text-center mt-4">
+        <a href="{{ url_for('constructor') }}" class="btn btn-primary btn-lg" data-aos="fade-up" data-aos-delay="500">Создать свой бизнес</a>
+    </div>
+</section>
+
+<!-- Testimonials -->
+<section class="testimonials py-5 mt-5">
+    <h2 class="text-center mb-5" data-aos="fade-up">Отзывы клиентов</h2>
+    <div class="row">
+        <div class="col-lg-4 mb-4" data-aos="fade-up" data-aos-delay="100">
+            <div class="testimonial-card">
+                <div class="testimonial-content">
+                    <p>"Благодаря Бизнес Конструктору я быстро рассчитал бюджет для открытия своей кофейни. Точность расчетов поразила — итоговая сумма отличалась от реальных затрат всего на 5%!"</p>
+                </div>
+                <div class="testimonial-author d-flex align-items-center mt-3">
+                    <img src="{{ url_for('static', filename='img/testimonial-1.jpg') }}" alt="Андрей К." class="testimonial-avatar">
+                    <div class="ms-3">
+                        <h5 class="mb-0">Андрей К.</h5>
+                        <p class="text-muted mb-0">Владелец сети кофеен</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 mb-4" data-aos="fade-up" data-aos-delay="200">
+            <div class="testimonial-card">
+                <div class="testimonial-content">
+                    <p>"Отличный инструмент для предпринимателей! Я использовала конструктор для проектирования онлайн-магазина косметики. Интуитивный интерфейс и подробная детализация очень помогли."</p>
+                </div>
+                <div class="testimonial-author d-flex align-items-center mt-3">
+                    <img src="{{ url_for('static', filename='img/testimonial-2.jpg') }}" alt="Мария Л." class="testimonial-avatar">
+                    <div class="ms-3">
+                        <h5 class="mb-0">Мария Л.</h5>
+                        <p class="text-muted mb-0">Основатель Beauty Shop</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 mb-4" data-aos="fade-up" data-aos-delay="300">
+            <div class="testimonial-card">
+                <div class="testimonial-content">
+                    <p>"Когда я планировал производство мебели, Бизнес Конструктор помог мне учесть все нюансы и скрытые расходы. Сэкономил мне как минимум несколько недель исследований и расчетов!"</p>
+                </div>
+                <div class="testimonial-author d-flex align-items-center mt-3">
+                    <img src="{{ url_for('static', filename='img/testimonial-3.jpg') }}" alt="Дмитрий В." class="testimonial-avatar">
+                    <div class="ms-3">
+                        <h5 class="mb-0">Дмитрий В.</h5>
+                        <p class="text-muted mb-0">Директор мебельной фабрики</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section py-5 mt-5 text-center" data-aos="fade-up">
+    <div class="cta-card">
+        <h2 class="mb-4">Готовы создать свой успешный бизнес?</h2>
+        <p class="lead mb-4">Начните прямо сейчас и получите детальный расчет стоимости вашего проекта</p>
+        <a href="{{ url_for('constructor') }}" class="btn btn-primary btn-lg">Перейти к конструктору</a>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Дополнительные скрипты для главной страницы при необходимости
+</script>
+{% endblock %} 

@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block title %}О проекте - Бизнес Конструктор{% endblock %}
+
+{% block content %}
+<div class="about-container">
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <!-- Баннер -->
+            <div class="about-banner text-center py-5 mb-5" data-aos="fade-up">
+                <h1 class="display-4 fw-bold mb-4">О проекте</h1>
+                <p class="lead">Узнайте больше о нашей миссии, команде и технологиях</p>
+            </div>
+            
+            <!-- О проекте -->
+            <div class="card mb-5 shadow-sm" data-aos="fade-up">
+                <div class="card-body p-4">
+                    <div class="row align-items-center">
+                        <div class="col-lg-6" data-aos="fade-right">
+                            <h2 class="mb-4">Наша миссия</h2>
+                            <p>Бизнес Конструктор был создан в 2024 году с целью помочь начинающим предпринимателям и действующим бизнесменам точно рассчитать стоимость запуска или масштабирования бизнес-проектов.</p>
+                            <p>Мы стремимся сделать процесс планирования бизнеса максимально прозрачным, точным и доступным для каждого предпринимателя, независимо от его опыта и финансовых возможностей.</p>
+                            <p>Наша платформа объединяет опыт сотен успешных предпринимателей и экспертные знания в области бизнес-планирования, чтобы предоставить вам наиболее точные данные и рекомендации.</p>
+                        </div>
+                        <div class="col-lg-6" data-aos="fade-left">
+                            <img src="{{ url_for('static', filename='img/about-mission.svg') }}" alt="Наша миссия" class="img-fluid rounded">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Особенности -->
+            <h2 class="text-center mb-4" data-aos="fade-up">Почему нам доверяют</h2>
+            <div class="row mb-5">
+                <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="100">
+                    <div class="feature-about-card h-100 text-center p-4">
+                        <div class="feature-about-icon mb-3">
+                            <i class="fas fa-bullseye"></i>
+                        </div>
+                        <h4>Точность</h4>
+                        <p>Наши алгоритмы основаны на реальных данных и обновляются ежемесячно с учетом актуальной рыночной ситуации.</p>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="200">
+                    <div class="feature-about-card h-100 text-center p-4">
+                        <div class="feature-about-icon mb-3">
+                            <i class="fas fa-user-shield"></i>
+                        </div>
+                        <h4>Надежность</h4>
+                        <p>Более 5000 предпринимателей уже использовали наш сервис для планирования своих бизнес-проектов.</p>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="300">
+                    <div class="feature-about-card h-100 text-center p-4">
+                        <div class="feature-about-icon mb-3">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h4>Эффективность</h4>
+                        <p>95% клиентов отмечают, что наши расчеты помогли им сэкономить время и избежать непредвиденных расходов.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Команда -->
+            <h2 class="text-center mb-4" data-aos="fade-up">Наша команда</h2>
+            <div class="row mb-5">
+                <div class="col-lg-3 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="100">
+                    <div class="team-card text-center">
+                        <div class="team-image">
+                            <img src="{{ url_for('static', filename='img/team-1.jpg') }}" alt="Александр Иванов" class="img-fluid rounded-circle">
+                        </div>
+                        <h4 class="mt-3">Александр Иванов</h4>
+                        <p class="text-muted">Основатель и CEO</p>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="200">
+                    <div class="team-card text-center">
+                        <div class="team-image">
+                            <img src="{{ url_for('static', filename='img/team-2.jpg') }}" alt="Екатерина Смирнова" class="img-fluid rounded-circle">
+                        </div>
+                        <h4 class="mt-3">Екатерина Смирнова</h4>
+                        <p class="text-muted">Главный аналитик</p>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="300">
+                    <div class="team-card text-center">
+                        <div class="team-image">
+                            <img src="{{ url_for('static', filename='img/team-3.jpg') }}" alt="Дмитрий Петров" class="img-fluid rounded-circle">
+                        </div>
+                        <h4 class="mt-3">Дмитрий Петров</h4>
+                        <p class="text-muted">Технический директор</p>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="400">
+                    <div class="team-card text-center">
+                        <div class="team-image">
+                            <img src="{{ url_for('static', filename='img/team-4.jpg') }}" alt="Ольга Кузнецова" class="img-fluid rounded-circle">
+                        </div>
+                        <h4 class="mt-3">Ольга Кузнецова</h4>
+                        <p class="text-muted">Бизнес-консультант</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Технологии -->
+            <div class="card mb-5 shadow-sm" data-aos="fade-up">
+                <div class="card-body p-4">
+                    <h2 class="text-center mb-4">Наши технологии</h2>
+                    <p class="text-center mb-4">Мы используем передовые технологии для обеспечения точности расчетов и удобства пользователей:</p>
+                    <div class="row text-center">
+                        <div class="col-md-3 mb-3" data-aos="zoom-in" data-aos-delay="100">
+                            <div class="tech-icon">
+                                <i class="fab fa-python"></i>
+                            </div>
+                            <p>Python</p>
+                        </div>
+                        <div class="col-md-3 mb-3" data-aos="zoom-in" data-aos-delay="200">
+                            <div class="tech-icon">
+                                <i class="fab fa-js"></i>
+                            </div>
+                            <p>JavaScript</p>
+                        </div>
+                        <div class="col-md-3 mb-3" data-aos="zoom-in" data-aos-delay="300">
+                            <div class="tech-icon">
+                                <i class="fab fa-bootstrap"></i>
+                            </div>
+                            <p>Bootstrap</p>
+                        </div>
+                        <div class="col-md-3 mb-3" data-aos="zoom-in" data-aos-delay="400">
+                            <div class="tech-icon">
+                                <i class="fas fa-database"></i>
+                            </div>
+                            <p>SQL</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- CTA -->
+            <div class="cta-about text-center py-5" data-aos="fade-up">
+                <h2 class="mb-4">Готовы начать свой бизнес?</h2>
+                <p class="lead mb-4">Присоединяйтесь к тысячам предпринимателей, которые уже оценили преимущества Бизнес Конструктора</p>
+                <a href="{{ url_for('constructor') }}" class="btn btn-primary btn-lg">Создать бизнес-план</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

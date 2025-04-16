@@ -1,0 +1,185 @@
+/* Специальные стили для страницы конструктора */
+
+.constructor-container {
+    padding: 2rem 0;
+}
+
+.constructor-card {
+    overflow: hidden;
+    margin-bottom: 2rem;
+}
+
+.constructor-card .card-header {
+    padding: 1.5rem;
+}
+
+/* Стили для опций типа бизнеса */
+.business-type-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.business-type-option {
+    height: 100%;
+}
+
+.business-type-option label {
+    height: 150px;
+    transition: all 0.3s ease;
+}
+
+.business-type-option .business-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+}
+
+.btn-check:checked + label {
+    background-color: var(--primary-color);
+    color: white;
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.btn-check:checked + label .business-icon {
+    transform: scale(1.2);
+}
+
+.btn-check:checked + label small {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* Стили для опций размера бизнеса */
+.business-size-container {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.business-size-option {
+    flex: 1;
+}
+
+.business-size-option label {
+    text-align: center;
+    padding: 1.5rem 1rem;
+    transition: all 0.3s ease;
+}
+
+/* Стили для функций */
+.features-container {
+    margin-bottom: 1.5rem;
+}
+
+.feature-card {
+    background-color: #fff;
+    border-radius: 10px;
+    padding: 1rem;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.feature-card .form-check {
+    display: flex;
+    align-items: flex-start;
+}
+
+.feature-card .form-check-input {
+    margin-top: 0.3rem;
+    margin-right: 0.75rem;
+    flex-shrink: 0;
+}
+
+.feature-name {
+    font-weight: 600;
+    margin-bottom: 0.2rem;
+}
+
+.feature-price {
+    color: var(--primary-color);
+    font-size: 0.9rem;
+}
+
+/* Ценовой контейнер */
+.price-container {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 10px;
+    padding: 1rem 1.5rem;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    display: inline-block;
+}
+
+.price-label {
+    font-size: 0.9rem;
+    color: #6c757d;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.price-value {
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+.currency {
+    font-size: 1rem;
+    color: #6c757d;
+}
+
+/* Кнопка расчета */
+#calculateBtn {
+    font-weight: 600;
+    box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2);
+    transition: all 0.3s ease;
+}
+
+#calculateBtn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 15px rgba(37, 99, 235, 0.3);
+}
+
+/* Контейнер помощи */
+.help-container {
+    padding: 1.5rem;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+/* Адаптивность */
+@media (max-width: 992px) {
+    .business-size-container {
+        flex-direction: column;
+    }
+    
+    .business-size-option label {
+        width: 100%;
+    }
+}
+
+@media (max-width: 768px) {
+    .business-type-container {
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    }
+    
+    .price-container {
+        width: 100%;
+        text-align: center;
+        margin-top: 1.5rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .business-type-container {
+        grid-template-columns: 1fr;
+    }
+} 

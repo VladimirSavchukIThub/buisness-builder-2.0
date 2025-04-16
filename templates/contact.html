@@ -1,0 +1,198 @@
+{% extends "base.html" %}
+
+{% block title %}Контакты - Бизнес Конструктор{% endblock %}
+
+{% block content %}
+<div class="contact-container">
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <!-- Баннер -->
+            <div class="contact-banner text-center py-5 mb-5" data-aos="fade-up">
+                <h1 class="display-4 fw-bold mb-4">Контакты</h1>
+                <p class="lead">Свяжитесь с нами для получения консультации или предложений</p>
+            </div>
+            
+            <div class="row">
+                <!-- Форма обратной связи -->
+                <div class="col-lg-7 mb-4" data-aos="fade-right">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body p-4">
+                            <h2 class="mb-4"><i class="fas fa-envelope me-2"></i>Напишите нам</h2>
+                            <p class="mb-4">Заполните форму ниже, и наш специалист свяжется с вами в течение 24 часов.</p>
+                            
+                            <form id="contactForm">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="name" class="form-label">Ваше имя</label>
+                                        <input type="text" class="form-control" id="name" placeholder="Введите ваше имя" required>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="email" class="form-label">Email</label>
+                                        <input type="email" class="form-control" id="email" placeholder="your@email.com" required>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="subject" class="form-label">Тема</label>
+                                    <select class="form-select" id="subject" required>
+                                        <option value="" selected disabled>Выберите тему обращения</option>
+                                        <option value="consultation">Консультация по бизнесу</option>
+                                        <option value="partnership">Предложение о сотрудничестве</option>
+                                        <option value="support">Техническая поддержка</option>
+                                        <option value="feedback">Отзыв о сервисе</option>
+                                        <option value="other">Другое</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="message" class="form-label">Сообщение</label>
+                                    <textarea class="form-control" id="message" rows="5" placeholder="Напишите ваше сообщение здесь..." required></textarea>
+                                </div>
+                                
+                                <div class="mb-3 form-check">
+                                    <input type="checkbox" class="form-check-input" id="privacy" required>
+                                    <label class="form-check-label" for="privacy">Я согласен на обработку персональных данных</label>
+                                </div>
+                                
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-paper-plane me-2"></i>Отправить сообщение
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Контактная информация -->
+                <div class="col-lg-5" data-aos="fade-left">
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-body p-4">
+                            <h2 class="mb-4"><i class="fas fa-info-circle me-2"></i>Контактная информация</h2>
+                            
+                            <div class="contact-info">
+                                <div class="contact-item d-flex align-items-center mb-3">
+                                    <div class="contact-icon me-3">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                    </div>
+                                    <div>
+                                        <h5>Адрес:</h5>
+                                        <p>г. Москва, ул. Бизнес, 42, офис 301</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="contact-item d-flex align-items-center mb-3">
+                                    <div class="contact-icon me-3">
+                                        <i class="fas fa-phone"></i>
+                                    </div>
+                                    <div>
+                                        <h5>Телефон:</h5>
+                                        <p>+7 (999) 123-45-67</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="contact-item d-flex align-items-center mb-3">
+                                    <div class="contact-icon me-3">
+                                        <i class="fas fa-envelope"></i>
+                                    </div>
+                                    <div>
+                                        <h5>Email:</h5>
+                                        <p>info@business-constructor.ru</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="contact-item d-flex align-items-center">
+                                    <div class="contact-icon me-3">
+                                        <i class="fas fa-clock"></i>
+                                    </div>
+                                    <div>
+                                        <h5>Время работы:</h5>
+                                        <p>Пн-Пт: 9:00 - 18:00<br>Сб-Вс: Выходные</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Социальные сети -->
+                    <div class="card shadow-sm" data-aos="fade-up" data-aos-delay="100">
+                        <div class="card-body p-4">
+                            <h2 class="mb-4"><i class="fas fa-share-alt me-2"></i>Мы в соцсетях</h2>
+                            
+                            <div class="social-links">
+                                <a href="#" class="social-link" title="Telegram">
+                                    <i class="fab fa-telegram"></i>
+                                    <span>@BusinessConstructor</span>
+                                </a>
+                                
+                                <a href="#" class="social-link" title="ВКонтакте">
+                                    <i class="fab fa-vk"></i>
+                                    <span>vk.com/businessconstructor</span>
+                                </a>
+                                
+                                <a href="#" class="social-link" title="YouTube">
+                                    <i class="fab fa-youtube"></i>
+                                    <span>Бизнес Конструктор</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Карта -->
+            <div class="card mt-4 shadow-sm" data-aos="fade-up">
+                <div class="card-body p-4">
+                    <h2 class="mb-4"><i class="fas fa-map me-2"></i>Как нас найти</h2>
+                    <div class="map-container">
+                        <div class="ratio ratio-21x9">
+                            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2245.5802189241347!2d37.67075491193387!3d55.75776498055644!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x46b54a7caa29b957%3A0x6a9247e9e9c7b4a2!2z0KHQsNC00L7QstC-0LUg0LrQvtC70YzRhtC-LCDQnNC-0YHQutCy0LA!5e0!3m2!1sru!2sru!4v1685969233297!5m2!1sru!2sru" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Обработчик отправки формы
+    document.getElementById('contactForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Имитация отправки данных
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        
+        // Изменяем текст кнопки на время "отправки"
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Отправка...';
+        submitBtn.disabled = true;
+        
+        // Имитируем задержку отправки
+        setTimeout(function() {
+            // Создаем уведомление об успешной отправке
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-success alert-dismissible fade show mt-3';
+            alertDiv.role = 'alert';
+            alertDiv.innerHTML = `
+                <strong>Спасибо за обращение!</strong> Ваше сообщение успешно отправлено. Мы свяжемся с вами в ближайшее время.
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Закрыть"></button>
+            `;
+            
+            // Добавляем уведомление на страницу
+            document.getElementById('contactForm').appendChild(alertDiv);
+            
+            // Сбрасываем форму и восстанавливаем кнопку
+            document.getElementById('contactForm').reset();
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+            
+            // Автоматически скрываем уведомление через 5 секунд
+            setTimeout(function() {
+                const alert = new bootstrap.Alert(alertDiv);
+                alert.close();
+            }, 5000);
+        }, 1500);
+    });
+</script>
+{% endblock %} 

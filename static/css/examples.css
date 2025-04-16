@@ -1,0 +1,388 @@
+/* Специальные стили для страницы примеров проектов */
+
+.examples-banner {
+    background: var(--gradient-primary);
+    color: white;
+    padding: 5rem 0;
+    text-align: center;
+    position: relative;
+    margin-bottom: 4rem;
+}
+
+.examples-banner::after {
+    content: '';
+    position: absolute;
+    bottom: -50px;
+    left: 0;
+    right: 0;
+    height: 100px;
+    background: linear-gradient(to bottom right, transparent 0%, transparent 50%, white 50%, white 100%);
+}
+
+.examples-banner h1 {
+    font-size: 3rem;
+    font-weight: 800;
+    margin-bottom: 1.5rem;
+}
+
+.examples-banner p {
+    font-size: 1.25rem;
+    opacity: 0.9;
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+/* Секция фильтров */
+.filters-container {
+    background-color: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 3rem;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+}
+
+.filter-label {
+    font-weight: 700;
+    color: var(--dark-color);
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.filter-dropdown {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background-color: #f8fafc;
+    color: var(--secondary-color);
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.filter-dropdown:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+/* Грид с примерами */
+.examples-grid {
+    margin-bottom: 3rem;
+}
+
+.example-card {
+    border-radius: 12px;
+    overflow: hidden;
+    background-color: white;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.example-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+}
+
+.example-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+.example-content {
+    padding: 1.5rem;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.example-tag {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 50px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-right: 0.5rem;
+    margin-bottom: 0.5rem;
+    background-color: #f1f5f9;
+    color: var(--secondary-color);
+}
+
+.tag-business-type {
+    background-color: #e0f2fe;
+    color: #0284c7;
+}
+
+.tag-size {
+    background-color: #dcfce7;
+    color: #16a34a;
+}
+
+.tag-budget {
+    background-color: #fef3c7;
+    color: #d97706;
+}
+
+.example-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 1rem 0;
+    color: var(--dark-color);
+}
+
+.example-description {
+    color: var(--secondary-color);
+    margin-bottom: 1.5rem;
+    flex-grow: 1;
+}
+
+.example-details {
+    display: flex;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+}
+
+.detail {
+    display: flex;
+    align-items: center;
+    margin-right: 1.5rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.detail-icon {
+    color: var(--primary-color);
+    margin-right: 0.5rem;
+    font-size: 1.1rem;
+}
+
+.result-section {
+    border-top: 1px solid #e2e8f0;
+    padding-top: 1rem;
+    margin-top: auto;
+}
+
+.result-section h5 {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+    color: var(--dark-color);
+}
+
+.result-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+}
+
+.result-label {
+    color: var(--secondary-color);
+}
+
+.result-value {
+    font-weight: 700;
+    color: var(--success-color);
+}
+
+/* Кнопка "Показать еще" */
+.load-more-container {
+    text-align: center;
+    margin: 3rem 0;
+}
+
+.btn-load-more {
+    padding: 0.75rem 2rem;
+    border-radius: 50px;
+    font-weight: 600;
+    box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2);
+    transition: all 0.3s ease;
+}
+
+.btn-load-more:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 15px rgba(37, 99, 235, 0.3);
+}
+
+.loading-spinner {
+    display: none;
+    margin: 0 auto;
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(0, 0, 0, 0.1);
+    border-radius: 50%;
+    border-top-color: var(--primary-color);
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* CTA-секция */
+.cta-section {
+    background-color: #f8fafc;
+    padding: 4rem 0;
+    text-align: center;
+    border-radius: 12px;
+    margin-bottom: 4rem;
+}
+
+.cta-section h2 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin-bottom: 1.5rem;
+    color: var(--dark-color);
+}
+
+.cta-section p {
+    font-size: 1.1rem;
+    color: var(--secondary-color);
+    max-width: 700px;
+    margin: 0 auto 2rem;
+}
+
+.cta-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+}
+
+/* Отзывы клиентов */
+.testimonial-container {
+    background-color: white;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    margin-bottom: 3rem;
+}
+
+.testimonial-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 1rem;
+}
+
+.testimonial-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.testimonial-info h5 {
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+}
+
+.testimonial-info p {
+    color: var(--secondary-color);
+    margin-bottom: 0;
+    font-size: 0.9rem;
+}
+
+.testimonial-quote {
+    font-size: 1.1rem;
+    line-height: 1.7;
+    color: var(--secondary-color);
+    position: relative;
+    padding: 0 1.5rem;
+}
+
+.testimonial-quote::before,
+.testimonial-quote::after {
+    content: '\201C';
+    font-size: 3rem;
+    position: absolute;
+    top: -1rem;
+    left: 0;
+    color: var(--primary-color);
+    opacity: 0.3;
+}
+
+.testimonial-quote::after {
+    content: '\201D';
+    top: auto;
+    left: auto;
+    right: 0;
+    bottom: -2rem;
+}
+
+/* Адаптивность */
+@media (max-width: 992px) {
+    .examples-banner h1 {
+        font-size: 2.5rem;
+    }
+    
+    .examples-banner p {
+        font-size: 1.1rem;
+    }
+    
+    .cta-section h2 {
+        font-size: 2rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .examples-banner {
+        padding: 4rem 0;
+    }
+    
+    .examples-banner h1 {
+        font-size: 2rem;
+    }
+    
+    .filters-container {
+        padding: 1rem;
+    }
+    
+    .filter-item {
+        margin-bottom: 1rem;
+    }
+    
+    .cta-buttons {
+        flex-direction: column;
+    }
+    
+    .cta-buttons .btn {
+        width: 100%;
+        margin-bottom: 1rem;
+    }
+    
+    .example-card {
+        margin-bottom: 2rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .examples-banner h1 {
+        font-size: 1.75rem;
+    }
+    
+    .examples-banner p {
+        font-size: 1rem;
+    }
+    
+    .example-content {
+        padding: 1rem;
+    }
+    
+    .example-title {
+        font-size: 1.1rem;
+    }
+    
+    .testimonial-quote {
+        font-size: 1rem;
+        padding: 0;
+    }
+    
+    .testimonial-quote::before,
+    .testimonial-quote::after {
+        display: none;
+    }
+} 

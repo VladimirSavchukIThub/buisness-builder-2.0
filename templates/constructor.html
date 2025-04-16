@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block title %}Конструктор бизнеса{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/constructor.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="constructor-container">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card constructor-card shadow-lg" data-aos="fade-up">
+                <div class="card-header bg-primary text-white p-4">
+                    <h2 class="mb-0"><i class="fas fa-tools me-2"></i>Создайте свой бизнес</h2>
+                </div>
+                <div class="card-body p-4">
+                    <p class="lead mb-4">Настройте параметры вашего будущего бизнеса и получите подробный расчет стоимости.</p>
+                    
+                    <form id="businessForm" action="{{ url_for('result') }}" method="POST">
+                        <!-- Тип бизнеса -->
+                        <div class="mb-4">
+                            <label for="businessType" class="form-label h5 mb-3">
+                                <i class="fas fa-store me-2"></i>Тип бизнеса
+                            </label>
+                            <div class="business-type-container">
+                                {% for type in business_types %}
+                                <div class="business-type-option">
+                                    <input type="radio" class="btn-check" name="businessType" id="type-{{ type.id }}" 
+                                           value="{{ type.id }}" data-price="{{ type.base_price }}" required>
+                                    <label class="btn btn-outline-primary w-100 h-100 d-flex flex-column align-items-center justify-content-center" 
+                                           for="type-{{ type.id }}">
+                                        <div class="business-icon mb-2">
+                                            {% if type.id == 'retail' %}
+                                                <i class="fas fa-shopping-bag"></i>
+                                            {% elif type.id == 'service' %}
+                                                <i class="fas fa-concierge-bell"></i>
+                                            {% elif type.id == 'production' %}
+                                                <i class="fas fa-industry"></i>
+                                            {% elif type.id == 'online' %}
+                                                <i class="fas fa-globe"></i>
+                                            {% endif %}
+                                        </div>
+                                        <span>{{ type.name }}</span>
+                                        <small class="text-muted mt-1">Базовая цена: {{ type.base_price }} руб.</small>
+                                    </label>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <!-- Размер бизнеса -->
+                        <div class="mb-4">
+                            <label for="businessSize" class="form-label h5 mb-3">
+                                <i class="fas fa-expand-arrows-alt me-2"></i>Размер бизнеса
+                            </label>
+                            <div class="business-size-container">
+                                {% for size in business_sizes %}
+                                <div class="business-size-option">
+                                    <input type="radio" class="btn-check" name="businessSize" id="size-{{ size.id }}" 
+                                           value="{{ size.id }}" data-multiplier="{{ size.multiplier }}" required>
+                                    <label class="btn btn-outline-primary w-100" for="size-{{ size.id }}">
+                                        <span>{{ size.name }}</span>
+                                        <small class="d-block text-muted mt-1">Множитель: x{{ size.multiplier }}</small>
+                                    </label>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <!-- Дополнительные функции -->
+                        <div class="mb-4">
+                            <label class="form-label h5 mb-3">
+                                <i class="fas fa-plus-circle me-2"></i>Дополнительные функции
+                            </label>
+                            <div class="features-container">
+                                <div class="row g-3">
+                                    {% for feature in features %}
+                                    <div class="col-md-6 col-lg-4">
+                                        <div class="feature-card">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" 
+                                                       value="{{ feature.id }}" id="feature{{ loop.index }}" 
+                                                       name="features" data-price="{{ feature.price }}">
+                                                <label class="form-check-label" for="feature{{ loop.index }}">
+                                                    <div class="feature-name">{{ feature.name }}</div>
+                                                    <div class="feature-price">+{{ feature.price }} руб.</div>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <hr class="my-4">
+                        
+                        <!-- Расчет и результаты -->
+                        <div class="d-flex justify-content-between align-items-center flex-wrap">
+                            <button type="submit" id="calculateBtn" class="btn btn-primary btn-lg px-5 py-3">
+                                <i class="fas fa-calculator me-2"></i>Рассчитать бизнес-план
+                            </button>
+                            <div class="price-container mt-3 mt-md-0">
+                                <span class="price-label">Предварительная оценка:</span>
+                                <span class="price-value"><span id="totalPrice">0</span> <span class="currency">руб.</span></span>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Дополнительная помощь -->
+            <div class="help-container mt-4 text-center" data-aos="fade-up" data-aos-delay="100">
+                <p class="mb-2">Нужна помощь в выборе? Свяжитесь с нашими экспертами:</p>
+                <a href="{{ url_for('contact') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-headset me-2"></i>Получить консультацию
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% endblock %} 
