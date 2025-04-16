@@ -65,12 +65,12 @@
                         </div>
                         
                         <div class="col-md-4">
-                            <div class="price-summary">
+                            <div class="price-summary" style="background-color: #0d6efd;">
                                 <div class="price-header">
                                     <h3>Итоговая стоимость</h3>
                                 </div>
-                                <div class="price-value animated-price">
-                                    {{ result.price }} руб.
+                                <div class="price-value animated-price" style="color: white;">
+                                    {{ result.price|number_format }} руб.
                                 </div>
                                 <div class="price-info">
                                     <p><i class="fas fa-info-circle me-2"></i>Полная стоимость запуска бизнес-проекта</p>
@@ -118,10 +118,13 @@
                         <a href="{{ url_for('constructor') }}" class="btn btn-outline-primary btn-lg me-3">
                             <i class="fas fa-edit me-2"></i>Изменить параметры
                         </a>
-                        <a href="#" class="btn btn-success btn-lg" id="downloadPdfBtn">
+                        <a href="/download-pdf" class="btn btn-success btn-lg" id="downloadPdfBtn">
                             <i class="fas fa-file-pdf me-2"></i>Скачать бизнес-план
                         </a>
                     </div>
+                    
+                    <!-- Контейнер для уведомлений о PDF -->
+                    <div id="pdfNotifications" class="mt-3"></div>
                 </div>
             </div>
             
@@ -171,8 +174,107 @@
     
     // Обработчик для кнопки скачивания PDF
     document.getElementById('downloadPdfBtn').addEventListener('click', function(e) {
-        e.preventDefault();
-        alert('Функция скачивания PDF будет доступна в ближайшее время!');
+        e.preventDefault(); // Предотвращаем стандартное поведение ссылки
+        console.log('Начинаем процесс скачивания PDF...');
+        
+        // Показываем индикатор загрузки
+        showNotification('info', 'Подготавливаем PDF, пожалуйста, подождите...');
+        
+        // Получаем URL для скачивания
+        const downloadUrl = this.getAttribute('href');
+        console.log('URL для скачивания:', downloadUrl);
+        
+        // Ещё один подход - прямая загрузка через fetch
+        fetch(downloadUrl)
+            .then(response => {
+                console.log('HTTP статус:', response.status);
+                console.log('Заголовки ответа:', Array.from(response.headers.entries()));
+                
+                if (!response.ok) {
+                    return response.text().then(text => {
+                        throw new Error(`HTTP ошибка! Статус: ${response.status}, Сообщение: ${text}`);
+                    });
+                }
+                
+                // Проверяем content-type
+                const contentType = response.headers.get('content-type');
+                console.log('Content-Type:', contentType);
+                
+                if (contentType && contentType.includes('application/pdf')) {
+                    return response.blob();
+                } else {
+                    // Если это не PDF, читаем текст ответа для отображения ошибки
+                    return response.text().then(text => {
+                        throw new Error(`Ответ не является PDF файлом: ${text}`);
+                    });
+                }
+            })
+            .then(blob => {
+                console.log('Получен blob, тип:', blob.type, 'размер:', blob.size);
+                
+                if (blob.size < 100) {
+                    // Если получен слишком маленький файл, это может быть текстовое сообщение об ошибке
+                    return blob.text().then(text => {
+                        throw new Error(`Ошибка генерации PDF: ${text}`);
+                    });
+                }
+                
+                // Создаем ссылку для скачивания
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = 'business_plan.pdf';
+                document.body.appendChild(a);
+                
+                // Попытка скачивания
+                try {
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                    showNotification('success', 'PDF успешно загружен!');
+                } catch (error) {
+                    console.error('Ошибка при клике на ссылку:', error);
+                    document.body.removeChild(a);
+                    showNotification('warning', 'Возникла проблема при скачивании. Попробуйте открыть PDF в новой вкладке.');
+                    
+                    // Открытие в новой вкладке как запасной вариант
+                    window.open(url, '_blank');
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка при загрузке PDF:', error);
+                showNotification('danger', `Не удалось загрузить PDF: ${error.message}. Пожалуйста, попробуйте снова.`);
+                
+                // Пытаемся открыть в новой вкладке как запасной вариант
+                setTimeout(() => {
+                    window.open(downloadUrl, '_blank');
+                }, 1000);
+            });
+        
+        // Функция для отображения уведомлений
+        function showNotification(type, message) {
+            const alertHTML = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Закрыть"></button>
+                </div>
+            `;
+            
+            const notificationsContainer = document.getElementById('pdfNotifications');
+            notificationsContainer.innerHTML = alertHTML;
+            
+            // Автоматически скрываем уведомление успеха через 5 секунд
+            if (type === 'success') {
+                setTimeout(function() {
+                    const alertElement = notificationsContainer.querySelector('.alert');
+                    if (alertElement) {
+                        const alert = new bootstrap.Alert(alertElement);
+                        alert.close();
+                    }
+                }, 5000);
+            }
+        }
     });
 </script>
 {% endblock %} 
