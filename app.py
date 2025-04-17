@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, jsonify, redirect, url_for, flash, session, send_file, make_response, abort
-from config import business_options, calculate_price
+from config import business_options, calculate_price, DATABASE_URI
 import traceback
 import os
 import locale
@@ -10,19 +10,29 @@ from bank_api import get_business_loan_rates, calculate_business_loan, BankAPI
 from chatbot import ChatBot  # Импортируем наш класс чат-бота
 import jinja2
 from markupsafe import Markup
+from flask_migrate import Migrate
+from models import db, BusinessType, BusinessSize, Feature, Article, Example, Message, User, BusinessPlan
 
 # Импортируем модули для админ-панели
 from admin_auth import verify_password, login_admin, logout_admin, is_admin_logged_in, admin_required
 from data_manager import DataManager
 from file_handler import save_file, delete_file
+from datetime import datetime
+from werkzeug.security import generate_password_hash
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)  # для работы с сессиями и flash-сообщениями
 
+# Настройка базы данных
+app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URI
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db.init_app(app)
+migrate = Migrate(app, db)
+
 # Инициализация чат-бота
 chatbot = ChatBot()
 
-# Инициализация менеджера данных
+# Инициализация менеджера данных (временно сохраняем для обратной совместимости)
 data_manager = DataManager()
 
 # Пытаемся установить русскую локаль для Windows
@@ -93,8 +103,15 @@ def contact():
             return render_template('contact.html')
         
         try:
-            # Сохраняем сообщение в базе данных
-            data_manager.add_message(name, email, subject, content)
+            # Создаем новое сообщение в БД
+            new_message = Message(
+                name=name,
+                email=email,
+                subject=subject,
+                content=content
+            )
+            db.session.add(new_message)
+            db.session.commit()
             
             # Устанавливаем флаг успешной отправки
             success_message = True
@@ -116,45 +133,42 @@ def examples():
 @app.route('/knowledge-base')
 def knowledge_base():
     """Страница базы знаний."""
-    articles = data_manager.get_articles()
+    # Получаем статьи из БД
+    articles_query = Article.query
     
     # Search functionality
     search_query = request.args.get('search', '')
     category_filter = request.args.get('category', '')
     
-    filtered_articles = articles
-    
     # Apply category filter if provided
     if category_filter:
-        filtered_articles = [article for article in filtered_articles if 
-                          article['category'] == category_filter]
+        articles_query = articles_query.filter_by(category=category_filter)
     
     # Apply search filter if provided
     if search_query:
-        filtered_articles = [article for article in filtered_articles if 
-                          search_query.lower() in article['title'].lower() or 
-                          search_query.lower() in article['description'].lower()]
+        search_pattern = f"%{search_query}%"
+        articles_query = articles_query.filter(
+            db.or_(
+                Article.title.ilike(search_pattern),
+                Article.description.ilike(search_pattern)
+            )
+        )
+    
+    # Получаем результаты
+    articles = articles_query.all()
     
     return render_template('knowledge_base.html', 
-                          articles=filtered_articles, 
+                          articles=articles, 
                           search_query=search_query,
                           category=category_filter)
 
-@app.route('/knowledge-base/article/<article_id>')
+@app.route('/knowledge-base/article/<int:article_id>')
 def article_detail(article_id):
     """Страница отдельной статьи."""
-    article = data_manager.get_article(article_id)
-    if not article:
-        abort(404)
-        
-    # Get related articles (for demo just get 2 random articles)
-    articles = data_manager.get_articles()
-    related_articles = []
-    for a in articles:
-        if a['id'] != article_id:
-            related_articles.append(a)
-            if len(related_articles) >= 2:
-                break
+    article = Article.query.get_or_404(article_id)
+    
+    # Get related articles (for now, just get 2 random articles different from current)
+    related_articles = Article.query.filter(Article.id != article_id).order_by(db.func.random()).limit(2).all()
     
     return render_template('article_detail.html', article=article, related_articles=related_articles)
 
@@ -414,39 +428,42 @@ def admin_logout():
 @admin_required
 def admin_dashboard():
     """Главная страница админ-панели."""
-    # Получаем данные для статистики
-    messages = data_manager.get_messages()
-    articles = data_manager.get_articles()
+    # Получаем данные для статистики из БД
+    messages_count = Message.query.count()
+    articles_count = Article.query.count()
+    plans_count = BusinessPlan.query.count()
+    users_count = User.query.count()
+    
+    # Данные для графика типов бизнеса (используем тестовые данные)
+    top_business_types = [
+        {'name': 'Интернет-магазин', 'count': 142},
+        {'name': 'Кафе', 'count': 89},
+        {'name': 'Салон красоты', 'count': 64},
+        {'name': 'Строительство', 'count': 47},
+        {'name': 'Другое', 'count': 4}
+    ]
     
     # Генерируем тестовые данные для статистики
     stats = {
-        'users_count': 124,
-        'articles_count': len(articles),
-        'plans_count': 346,
-        'messages_count': len(messages),
+        'users_count': users_count,
+        'articles_count': articles_count,
+        'plans_count': plans_count,
+        'messages_count': messages_count,
         
         # Данные для графика планов за 30 дней
         'days_labels': [f"{i+1}" for i in range(30)],
         'plans_by_day': [3, 5, 2, 4, 6, 5, 8, 7, 9, 12, 10, 8, 7, 11, 13, 9, 8, 10, 12, 14, 11, 9, 8, 7, 9, 11, 13, 10, 8, 12],
         
         # Данные для графика типов бизнеса
-        'top_business_types': [
-            {'name': 'Интернет-магазин', 'count': 142},
-            {'name': 'Кафе', 'count': 89},
-            {'name': 'Салон красоты', 'count': 64},
-            {'name': 'Строительство', 'count': 47},
-            {'name': 'Другое', 'count': 4}
-        ],
-        'top_business_types_names': ['Интернет-магазин', 'Кафе', 'Салон красоты', 'Строительство', 'Другое'],
-        'top_business_types_counts': [142, 89, 64, 47, 4],
+        'top_business_types': top_business_types,
+        'top_business_types_names': [t['name'] for t in top_business_types],
+        'top_business_types_counts': [t['count'] for t in top_business_types],
         'chart_colors': ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b']
     }
     
-    # Получаем последние статьи
-    recent_articles = articles[:5]
-    
-    # Получаем последние сообщения
-    recent_messages = messages[:5]
+    # Получаем последние статьи и сообщения
+    recent_articles = Article.query.order_by(Article.created_at.desc()).limit(5).all()
+    recent_messages = Message.query.order_by(Message.created_at.desc()).limit(5).all()
     
     return render_template('admin/dashboard.html', stats=stats, recent_articles=recent_articles, recent_messages=recent_messages)
 
@@ -678,8 +695,8 @@ def admin_example_delete(example_id):
 @app.route('/admin/articles')
 @admin_required
 def admin_articles():
-    """Список статей базы знаний."""
-    articles = data_manager.get_articles()
+    """Список статей."""
+    articles = Article.query.all()
     return render_template('admin/articles/index.html', articles=articles)
 
 @app.route('/admin/articles/create', methods=['GET', 'POST'])
@@ -691,6 +708,11 @@ def admin_article_create():
         category = request.form.get('category')
         description = request.form.get('description')
         content = request.form.get('content')
+        featured = True if request.form.get('featured') else False
+        
+        if not title or not category or not description:
+            flash('Заполните обязательные поля', 'danger')
+            return render_template('admin/articles/create.html')
         
         # Обработка загрузки изображения
         image = ''
@@ -699,11 +721,23 @@ def admin_article_create():
             if image_file.filename:
                 image = save_file(image_file, 'images/articles')
         
-        if not title or not category or not description:
-            flash('Заполните обязательные поля', 'danger')
-            return render_template('admin/articles/create.html')
+        # Форматируем дату публикации
+        date = datetime.now().strftime('%d %B %Y')
         
-        data_manager.add_article(title, category, description, content, image)
+        # Создаем новую статью
+        new_article = Article(
+            title=title,
+            category=category,
+            description=description,
+            content=content,
+            image=image,
+            date=date,
+            featured=featured
+        )
+        
+        db.session.add(new_article)
+        db.session.commit()
+        
         flash('Статья успешно создана', 'success')
         return redirect(url_for('admin_articles'))
     
@@ -713,33 +747,44 @@ def admin_article_create():
 @admin_required
 def admin_article_edit(article_id):
     """Редактирование статьи."""
-    article = data_manager.get_article(article_id)
-    if not article:
-        flash('Статья не найдена', 'danger')
-        return redirect(url_for('admin_articles'))
+    article = Article.query.get_or_404(article_id)
     
     if request.method == 'POST':
         title = request.form.get('title')
         category = request.form.get('category')
         description = request.form.get('description')
         content = request.form.get('content')
-        
-        # Обработка изображения
-        image = article.get('image', '')
-        if 'image' in request.files:
-            image_file = request.files['image']
-            if image_file.filename:
-                # Удаляем старое изображение
-                if image:
-                    delete_file(image)
-                # Сохраняем новое изображение
-                image = save_file(image_file, 'images/articles')
+        featured = True if request.form.get('featured') else False
         
         if not title or not category or not description:
             flash('Заполните обязательные поля', 'danger')
             return render_template('admin/articles/edit.html', article=article)
         
-        data_manager.update_article(article_id, title, category, description, content, image)
+        # Обработка изображения
+        image = article.image
+        if 'image' in request.files:
+            image_file = request.files['image']
+            if image_file.filename:
+                # Удаляем старое изображение если оно есть
+                if image:
+                    delete_file(image)
+                # Сохраняем новое изображение
+                image = save_file(image_file, 'images/articles')
+        
+        # Проверяем, нужно ли удалить изображение
+        if request.form.get('delete_image') and image:
+            delete_file(image)
+            image = ''
+        
+        # Обновляем данные статьи
+        article.title = title
+        article.category = category
+        article.description = description
+        article.content = content
+        article.image = image
+        article.featured = featured
+        
+        db.session.commit()
         flash('Статья успешно обновлена', 'success')
         return redirect(url_for('admin_articles'))
     
@@ -749,16 +794,15 @@ def admin_article_edit(article_id):
 @admin_required
 def admin_article_delete(article_id):
     """Удаление статьи."""
-    article = data_manager.get_article(article_id)
-    if not article:
-        flash('Статья не найдена', 'danger')
-    else:
-        # Удаляем связанное изображение
-        if article.get('image'):
-            delete_file(article['image'])
-        
-        data_manager.delete_article(article_id)
-        flash('Статья успешно удалена', 'success')
+    article = Article.query.get_or_404(article_id)
+    
+    # Удаляем связанное изображение
+    if article.image:
+        delete_file(article.image)
+    
+    db.session.delete(article)
+    db.session.commit()
+    flash('Статья успешно удалена', 'success')
     
     return redirect(url_for('admin_articles'))
 
@@ -768,24 +812,20 @@ def admin_article_delete(article_id):
 @admin_required
 def admin_messages():
     """Список сообщений от пользователей."""
-    messages = data_manager.get_messages()
-    # Сортируем сообщения: сначала непрочитанные, затем по дате (новые в начале)
-    messages.sort(key=lambda x: (x.get('is_read', False), x.get('created_at', '')), reverse=True)
+    # Получаем все сообщения, сначала непрочитанные, потом по дате (новые вначале)
+    messages = Message.query.order_by(Message.is_read, Message.created_at.desc()).all()
     return render_template('admin/messages/index.html', messages=messages)
 
 @app.route('/admin/messages/<message_id>')
 @admin_required
 def admin_message_view(message_id):
     """Просмотр сообщения от пользователя."""
-    message = data_manager.get_message(message_id)
-    
-    if not message:
-        flash('Сообщение не найдено', 'danger')
-        return redirect(url_for('admin_messages'))
+    message = Message.query.get_or_404(message_id)
     
     # Отмечаем сообщение как прочитанное, если оно не прочитано
-    if not message.get('is_read'):
-        data_manager.mark_message_as_read(message_id)
+    if not message.is_read:
+        message.is_read = True
+        db.session.commit()
     
     return render_template('admin/messages/view.html', message=message)
 
@@ -793,12 +833,10 @@ def admin_message_view(message_id):
 @admin_required
 def admin_message_delete(message_id):
     """Удаление сообщения."""
-    message = data_manager.get_message(message_id)
-    if not message:
-        flash('Сообщение не найдено', 'danger')
-    else:
-        data_manager.delete_message(message_id)
-        flash('Сообщение успешно удалено', 'success')
+    message = Message.query.get_or_404(message_id)
+    db.session.delete(message)
+    db.session.commit()
+    flash('Сообщение успешно удалено', 'success')
     
     return redirect(url_for('admin_messages'))
 
@@ -807,9 +845,108 @@ def admin_message_delete(message_id):
 @app.route('/admin/users')
 @admin_required
 def admin_users():
-    """Список пользователей."""
-    users = []  # В реальном приложении: получаем из базы данных
-    return render_template('admin/users/index.html', users=users)
+    """Страница управления пользователями."""
+    users = User.query.all()
+    return render_template('admin/users.html', users=users)
+
+@app.route('/admin/user/create', methods=['GET', 'POST'])
+@admin_required
+def admin_user_create():
+    """Создание нового пользователя."""
+    if request.method == 'POST':
+        # Получаем данные формы
+        name = request.form.get('name', '').strip()
+        email = request.form.get('email', '').strip()
+        password = request.form.get('password', '').strip()
+        is_admin = bool(request.form.get('is_admin'))
+        
+        # Проверяем обязательные поля
+        if not name or not email or not password:
+            flash('Все поля должны быть заполнены', 'danger')
+            return redirect(url_for('admin_user_create'))
+            
+        # Проверяем уникальность email
+        if User.query.filter_by(email=email).first():
+            flash('Пользователь с таким email уже существует', 'danger')
+            return redirect(url_for('admin_user_create'))
+        
+        # Создаем пользователя
+        user = User(
+            name=name,
+            email=email,
+            password=generate_password_hash(password),
+            is_admin=is_admin
+        )
+        
+        try:
+            db.session.add(user)
+            db.session.commit()
+            flash('Пользователь успешно создан', 'success')
+            return redirect(url_for('admin_users'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Ошибка при создании пользователя: {str(e)}', 'danger')
+            
+    return render_template('admin/user_form.html', user=None, action='create')
+
+@app.route('/admin/user/<int:user_id>/edit', methods=['GET', 'POST'])
+@admin_required
+def admin_user_edit(user_id):
+    """Редактирование пользователя."""
+    user = User.query.get_or_404(user_id)
+    
+    if request.method == 'POST':
+        # Получаем данные формы
+        name = request.form.get('name', '').strip()
+        email = request.form.get('email', '').strip()
+        password = request.form.get('password', '').strip()
+        is_admin = bool(request.form.get('is_admin'))
+        
+        # Проверяем обязательные поля
+        if not name or not email:
+            flash('Имя и email должны быть заполнены', 'danger')
+            return redirect(url_for('admin_user_edit', user_id=user_id))
+            
+        # Проверяем уникальность email (исключая текущего пользователя)
+        existing_user = User.query.filter_by(email=email).first()
+        if existing_user and existing_user.id != user_id:
+            flash('Пользователь с таким email уже существует', 'danger')
+            return redirect(url_for('admin_user_edit', user_id=user_id))
+        
+        # Обновляем пользователя
+        user.name = name
+        user.email = email
+        user.is_admin = is_admin
+        
+        # Обновляем пароль только если он был предоставлен
+        if password:
+            user.password = generate_password_hash(password)
+        
+        try:
+            db.session.commit()
+            flash('Пользователь успешно обновлен', 'success')
+            return redirect(url_for('admin_users'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Ошибка при обновлении пользователя: {str(e)}', 'danger')
+            
+    return render_template('admin/user_form.html', user=user, action='edit')
+
+@app.route('/admin/user/<int:user_id>/delete', methods=['POST'])
+@admin_required
+def admin_user_delete(user_id):
+    """Удаление пользователя."""
+    user = User.query.get_or_404(user_id)
+    
+    try:
+        db.session.delete(user)
+        db.session.commit()
+        flash('Пользователь успешно удален', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Ошибка при удалении пользователя: {str(e)}', 'danger')
+        
+    return redirect(url_for('admin_users'))
 
 # Маршрут для настроек
 
@@ -820,4 +957,114 @@ def admin_settings():
     return render_template('admin/settings.html')
 
 if __name__ == '__main__':
-    app.run(debug=True) 
+    app.run(debug=True)
+
+# CLI команды для управления базой данных
+@app.cli.command("init-db")
+def init_db():
+    """Инициализирует базу данных."""
+    db.create_all()
+    print("База данных инициализирована.")
+
+@app.cli.command("migrate-data")
+def migrate_data():
+    """Миграция данных из JSON файлов в базу данных."""
+    # Импорт бизнес-типов
+    business_types = data_manager.get_business_types()
+    for bt in business_types:
+        existing = BusinessType.query.filter_by(name=bt['name']).first()
+        if not existing:
+            new_bt = BusinessType(
+                name=bt['name'],
+                base_price=bt['base_price'],
+                description=bt.get('description', '')
+            )
+            db.session.add(new_bt)
+    
+    # Импорт функций/услуг
+    features = data_manager.get_features()
+    for f in features:
+        existing = Feature.query.filter_by(name=f['name']).first()
+        if not existing:
+            new_feature = Feature(
+                name=f['name'],
+                price=f['price'],
+                description=f.get('description', '')
+            )
+            db.session.add(new_feature)
+    
+    # Импорт бизнес-размеров из конфигурации
+    for bs in business_options['business_sizes']:
+        existing = BusinessSize.query.filter_by(name=bs['name']).first()
+        if not existing:
+            new_bs = BusinessSize(
+                name=bs['name'],
+                multiplier=bs['multiplier'],
+                description=bs.get('description', '')
+            )
+            db.session.add(new_bs)
+    
+    # Импорт статей
+    articles = data_manager.get_articles()
+    for a in articles:
+        existing = Article.query.filter_by(title=a['title']).first()
+        if not existing:
+            new_article = Article(
+                title=a['title'],
+                category=a['category'],
+                description=a['description'],
+                content=a['content'],
+                image=a.get('image', ''),
+                date=a.get('date', ''),
+                featured=a.get('featured', False)
+            )
+            db.session.add(new_article)
+    
+    # Импорт примеров
+    examples = data_manager.get_examples()
+    for e in examples:
+        existing = Example.query.filter_by(title=e['title']).first()
+        if not existing:
+            new_example = Example(
+                title=e['title'],
+                business_type=e['business_type'],
+                investment=e['investment'],
+                profit=e['profit'],
+                period=e['period'],
+                content=e['content'],
+                image=e.get('image', '')
+            )
+            db.session.add(new_example)
+    
+    # Импорт сообщений
+    messages = data_manager.get_messages()
+    for m in messages:
+        existing = Message.query.filter_by(
+            name=m['name'], 
+            email=m['email'],
+            created_at=datetime.strptime(m['created_at'], '%d.%m.%Y %H:%M:%S') if isinstance(m['created_at'], str) else m['created_at']
+        ).first()
+        if not existing:
+            new_message = Message(
+                name=m['name'],
+                email=m['email'],
+                subject=m['subject'],
+                content=m['content'],
+                is_read=m.get('is_read', False)
+            )
+            db.session.add(new_message)
+    
+    # Создание администратора, если его нет
+    admin = User.query.filter_by(username='admin').first()
+    if not admin:
+        admin_hash = '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918'  # sha256 хеш для 'admin'
+        admin = User(
+            username='admin',
+            email='admin@example.com',
+            password_hash=admin_hash,
+            is_admin=True
+        )
+        db.session.add(admin)
+    
+    db.session.commit()
+    print("Данные успешно перенесены из JSON в базу данных.") 

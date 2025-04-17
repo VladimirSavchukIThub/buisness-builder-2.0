@@ -45,4 +45,9 @@ def calculate_price(data):
         feature_price = next((f['price'] for f in business_options['features'] if f['id'] == feature_id), 0)
         price += feature_price
     
-    return int(price) 
+    return int(price)
+
+# Настройки базы данных
+DATABASE_URI = 'postgresql://postgres:postgres@localhost:5433/business_constructor'
+# Альтернативные настройки: 
+# DATABASE_URI = 'postgresql://username:password@host:port/database' 

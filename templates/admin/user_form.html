@@ -1,0 +1,170 @@
+{% extends 'admin/layout.html' %}
+
+{% block title %}
+    {% if user %}
+        Редактирование пользователя
+    {% else %}
+        Добавление пользователя
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <h1 class="mt-4">
+        {% if user %}
+            Редактирование пользователя
+        {% else %}
+            Добавление пользователя
+        {% endif %}
+    </h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a href="{{ url_for('admin_dashboard') }}">Панель управления</a></li>
+        <li class="breadcrumb-item"><a href="{{ url_for('admin_users') }}">Пользователи</a></li>
+        <li class="breadcrumb-item active">
+            {% if user %}
+                Редактирование
+            {% else %}
+                Добавление
+            {% endif %}
+        </li>
+    </ol>
+    
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-user-edit me-1"></i>
+            {% if user %}
+                Редактирование данных пользователя
+            {% else %}
+                Данные нового пользователя
+            {% endif %}
+        </div>
+        <div class="card-body">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            <form method="post" class="needs-validation" novalidate>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control" id="name" name="name" placeholder="Имя пользователя" 
+                                   value="{{ user.name if user else '' }}" required>
+                            <label for="name">Имя пользователя <span class="text-danger">*</span></label>
+                            <div class="invalid-feedback">
+                                Пожалуйста, введите имя пользователя.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="form-floating mb-3">
+                            <input type="email" class="form-control" id="email" name="email" placeholder="E-mail" 
+                                   value="{{ user.email if user else '' }}" required>
+                            <label for="email">E-mail <span class="text-danger">*</span></label>
+                            <div class="invalid-feedback">
+                                Пожалуйста, введите корректный e-mail.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <div class="form-floating mb-3">
+                            <input type="password" class="form-control" id="password" name="password" placeholder="Пароль" 
+                                   {% if not user %}required{% endif %}>
+                            <label for="password">Пароль {% if not user %}<span class="text-danger">*</span>{% endif %}</label>
+                            <div class="invalid-feedback">
+                                Пожалуйста, введите пароль.
+                            </div>
+                            {% if user %}
+                            <div class="form-text">Оставьте поле пустым, если не хотите менять пароль.</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="form-floating mb-3">
+                            <input type="password" class="form-control" id="password_confirm" name="password_confirm" 
+                                   placeholder="Подтверждение пароля" {% if not user %}required{% endif %}>
+                            <label for="password_confirm">Подтверждение пароля {% if not user %}<span class="text-danger">*</span>{% endif %}</label>
+                            <div class="invalid-feedback">
+                                Пароли должны совпадать.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="is_admin" name="is_admin" 
+                               {% if user and user.is_admin %}checked{% endif %}>
+                        <label class="form-check-label" for="is_admin">
+                            Администратор
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="d-flex justify-content-between">
+                    <a href="{{ url_for('admin_users') }}" class="btn btn-secondary">Отмена</a>
+                    <button type="submit" class="btn btn-primary">
+                        {% if user %}
+                            Сохранить изменения
+                        {% else %}
+                            Добавить пользователя
+                        {% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Валидация формы
+    (function() {
+        'use strict'
+        
+        // Получаем все формы, к которым применяем валидацию
+        var forms = document.querySelectorAll('.needs-validation')
+        
+        // Проверка совпадения паролей
+        var password = document.getElementById('password')
+        var passwordConfirm = document.getElementById('password_confirm')
+        
+        function validatePassword() {
+            if (password.value != passwordConfirm.value) {
+                passwordConfirm.setCustomValidity('Пароли не совпадают')
+            } else {
+                passwordConfirm.setCustomValidity('')
+            }
+        }
+        
+        if (password && passwordConfirm) {
+            password.addEventListener('change', validatePassword)
+            passwordConfirm.addEventListener('keyup', validatePassword)
+        }
+        
+        // Проходим по всем формам и предотвращаем отправку
+        Array.prototype.slice.call(forms).forEach(function(form) {
+            form.addEventListener('submit', function(event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault()
+                    event.stopPropagation()
+                }
+                
+                form.classList.add('was-validated')
+            }, false)
+        })
+    })()
+</script>
+{% endblock %} 

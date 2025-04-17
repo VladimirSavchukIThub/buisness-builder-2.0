@@ -1,0 +1,112 @@
+{% extends 'admin/layout.html' %}
+
+{% block title %}Управление пользователями{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <h1 class="mt-4">Управление пользователями</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a href="{{ url_for('admin_dashboard') }}">Панель управления</a></li>
+        <li class="breadcrumb-item active">Пользователи</li>
+    </ol>
+    
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <div>
+                <i class="fas fa-users me-1"></i>
+                Список пользователей
+            </div>
+            <a href="{{ url_for('admin_user_create') }}" class="btn btn-primary btn-sm">
+                <i class="fas fa-plus me-1"></i> Добавить пользователя
+            </a>
+        </div>
+        <div class="card-body">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped" id="usersTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Имя</th>
+                            <th>Email</th>
+                            <th>Роль</th>
+                            <th>Дата регистрации</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                        <tr>
+                            <td>{{ user.id }}</td>
+                            <td>{{ user.name }}</td>
+                            <td>{{ user.email }}</td>
+                            <td>
+                                {% if user.is_admin %}
+                                <span class="badge bg-primary">Администратор</span>
+                                {% else %}
+                                <span class="badge bg-secondary">Пользователь</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ user.created_at.strftime('%d.%m.%Y %H:%M') }}</td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a href="{{ url_for('admin_user_edit', user_id=user.id) }}" class="btn btn-primary btn-sm">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal{{ user.id }}">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                                
+                                <!-- Модальное окно подтверждения удаления -->
+                                <div class="modal fade" id="deleteModal{{ user.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ user.id }}" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="deleteModalLabel{{ user.id }}">Подтверждение удаления</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                Вы уверены, что хотите удалить пользователя <strong>{{ user.name }}</strong>?
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                                                <form action="{{ url_for('admin_user_delete', user_id=user.id) }}" method="post">
+                                                    <button type="submit" class="btn btn-danger">Удалить</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        $('#usersTable').DataTable({
+            language: {
+                url: '//cdn.datatables.net/plug-ins/1.13.4/i18n/ru.json'
+            }
+        });
+    });
+</script>
+{% endblock %} 
