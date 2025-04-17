@@ -47,6 +47,269 @@
         margin-bottom: 0;
         font-size: 0.9rem;
     }
+    
+    /* Стили для раздела анализа рисков */
+    .risk-analysis .card {
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    /* Матрица рисков */
+    .risk-matrix-container {
+        padding: 15px;
+        position: relative;
+    }
+    
+    .risk-matrix {
+        display: grid;
+        grid-template-columns: 80px 1fr 1fr 1fr;
+        grid-template-rows: 40px 1fr 1fr 1fr;
+        position: relative;
+        margin-bottom: 20px;
+    }
+    
+    .risk-matrix-header-row {
+        display: contents;
+    }
+    
+    .risk-matrix-row {
+        display: contents;
+    }
+    
+    .risk-matrix-header-cell {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        background-color: #f8f9fa;
+        padding: 8px;
+        font-size: 0.85rem;
+        z-index: 1;
+    }
+    
+    .risk-matrix-corner {
+        background-color: #fff;
+    }
+    
+    .risk-matrix-cell {
+        height: 70px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 10px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        border: 1px solid rgba(0,0,0,0.1);
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+    
+    .risk-matrix-cell:hover {
+        transform: scale(1.05);
+        z-index: 5;
+    }
+    
+    .risk-matrix-vertical-label {
+        position: absolute;
+        left: -40px;
+        top: 50%;
+        transform: translateY(-50%) rotate(-90deg);
+        font-weight: bold;
+        font-size: 0.85rem;
+        color: #495057;
+    }
+    
+    .risk-matrix-horizontal-label {
+        position: absolute;
+        bottom: -25px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-weight: bold;
+        font-size: 0.85rem;
+        color: #495057;
+    }
+    
+    /* Цвета рисков */
+    .risk-very-low {
+        background-color: #d1e7dd;
+        color: #0f5132;
+    }
+    
+    .risk-low {
+        background-color: #d1ecf1;
+        color: #055160;
+    }
+    
+    .risk-medium {
+        background-color: #fff3cd;
+        color: #664d03;
+    }
+    
+    .risk-high {
+        background-color: #f8d7da;
+        color: #842029;
+    }
+    
+    .risk-critical {
+        background-color: #dc3545;
+        color: white;
+    }
+    
+    /* Легенда рисков */
+    .risk-legend {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+    
+    .risk-legend-item {
+        display: flex;
+        align-items: center;
+        font-size: 0.75rem;
+    }
+    
+    .risk-legend-color {
+        width: 15px;
+        height: 15px;
+        margin-right: 5px;
+        border-radius: 2px;
+    }
+    
+    /* Аккордеон с рисками */
+    .risk-details .accordion-button {
+        padding: 0.75rem 1rem;
+    }
+    
+    .risk-badge {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 4px;
+        margin-right: 10px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    
+    .risk-details .accordion-body {
+        padding: 1rem;
+        font-size: 0.9rem;
+    }
+    
+    /* Общая оценка рисков */
+    .risk-summary-card {
+        border: 1px solid rgba(0,0,0,0.1);
+        border-radius: 0.25rem;
+        background-color: #f8f9fa;
+        margin-top: 20px;
+    }
+    
+    .risk-summary-header {
+        background-color: #343a40;
+        color: white;
+        padding: 10px 15px;
+        border-radius: 0.25rem 0.25rem 0 0;
+    }
+    
+    .risk-summary-header h5 {
+        margin: 0;
+    }
+    
+    .risk-summary-body {
+        padding: 15px;
+    }
+    
+    .risk-meter-container {
+        display: flex;
+        justify-content: center;
+        margin: 20px 0;
+    }
+    
+    .risk-meter {
+        width: 80%;
+        position: relative;
+    }
+    
+    .risk-meter-scale {
+        display: flex;
+        height: 20px;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+    
+    .risk-meter-segment {
+        flex: 1;
+    }
+    
+    .risk-meter-segment.very-low {
+        background-color: #d1e7dd;
+    }
+    
+    .risk-meter-segment.low {
+        background-color: #d1ecf1;
+    }
+    
+    .risk-meter-segment.medium {
+        background-color: #fff3cd;
+    }
+    
+    .risk-meter-segment.high {
+        background-color: #f8d7da;
+    }
+    
+    .risk-meter-segment.critical {
+        background-color: #dc3545;
+    }
+    
+    .risk-meter-indicator {
+        position: absolute;
+        top: -15px;
+        width: 10px;
+        height: 30px;
+        background-color: #000;
+        transform: translateX(-50%);
+    }
+    
+    .risk-meter-labels {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 5px;
+        font-size: 0.8rem;
+        color: #6c757d;
+    }
+    
+    .risk-conclusion {
+        margin-top: 15px;
+        font-size: 0.95rem;
+        text-align: center;
+    }
+    
+    .risk-strategies {
+        margin-top: 20px;
+    }
+    
+    .risk-strategies h6 {
+        margin-bottom: 15px;
+    }
+    
+    .strategy-card {
+        text-align: center;
+        padding: 10px;
+        border: 1px solid rgba(0,0,0,0.1);
+        border-radius: 0.25rem;
+        margin-bottom: 10px;
+        background-color: white;
+    }
+    
+    .strategy-icon {
+        font-size: 1.5rem;
+        margin-bottom: 5px;
+        color: #0d6efd;
+    }
+    
+    .strategy-name {
+        font-weight: 500;
+        font-size: 0.9rem;
+    }
 </style>
 {% endblock %}
 
@@ -324,6 +587,197 @@
                         <div class="alert alert-warning mt-3">
                             <i class="fas fa-exclamation-triangle me-2"></i>
                             <strong>Примечание:</strong> Расчет основан на среднерыночных показателях и может отличаться в зависимости от региона и текущей экономической ситуации. Рекомендуется провести дополнительный анализ с учетом специфики вашего бизнеса.
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="risk-analysis mt-4">
+                        <h3 class="mb-3">Анализ рисков</h3>
+                        
+                        <div class="row mb-4">
+                            <div class="col-md-7">
+                                <div class="card h-100">
+                                    <div class="card-header bg-danger text-white">
+                                        <h5 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Матрица рисков</h5>
+                                    </div>
+                                    <div class="card-body p-0">
+                                        <div class="risk-matrix-container">
+                                            <div class="risk-matrix">
+                                                <!-- Заголовки матрицы -->
+                                                <div class="risk-matrix-header-row">
+                                                    <div class="risk-matrix-header-cell risk-matrix-corner"></div>
+                                                    <div class="risk-matrix-header-cell">Низкая</div>
+                                                    <div class="risk-matrix-header-cell">Средняя</div>
+                                                    <div class="risk-matrix-header-cell">Высокая</div>
+                                                </div>
+                                                
+                                                <!-- Строки матрицы -->
+                                                <div class="risk-matrix-row">
+                                                    <div class="risk-matrix-header-cell">Высокая</div>
+                                                    <div class="risk-matrix-cell risk-medium" data-risk="market">Рыночные</div>
+                                                    <div class="risk-matrix-cell risk-high" data-risk="financial">Финансовые</div>
+                                                    <div class="risk-matrix-cell risk-critical" data-risk="operational">Операционные</div>
+                                                </div>
+                                                
+                                                <div class="risk-matrix-row">
+                                                    <div class="risk-matrix-header-cell">Средняя</div>
+                                                    <div class="risk-matrix-cell risk-low" data-risk="legal">Юридические</div>
+                                                    <div class="risk-matrix-cell risk-medium" data-risk="reputation">Репутационные</div>
+                                                    <div class="risk-matrix-cell risk-high" data-risk="compliance">Регуляторные</div>
+                                                </div>
+                                                
+                                                <div class="risk-matrix-row">
+                                                    <div class="risk-matrix-header-cell">Низкая</div>
+                                                    <div class="risk-matrix-cell risk-very-low" data-risk="environmental">Экологические</div>
+                                                    <div class="risk-matrix-cell risk-low" data-risk="personal">Персональные</div>
+                                                    <div class="risk-matrix-cell risk-medium" data-risk="supply">Логистические</div>
+                                                </div>
+                                                
+                                                <!-- Подписи осей -->
+                                                <div class="risk-matrix-vertical-label">Вероятность</div>
+                                                <div class="risk-matrix-horizontal-label">Влияние</div>
+                                            </div>
+                                            
+                                            <div class="risk-legend mt-2">
+                                                <div class="risk-legend-item">
+                                                    <div class="risk-legend-color risk-very-low"></div>
+                                                    <div class="risk-legend-text">Очень низкий</div>
+                                                </div>
+                                                <div class="risk-legend-item">
+                                                    <div class="risk-legend-color risk-low"></div>
+                                                    <div class="risk-legend-text">Низкий</div>
+                                                </div>
+                                                <div class="risk-legend-item">
+                                                    <div class="risk-legend-color risk-medium"></div>
+                                                    <div class="risk-legend-text">Средний</div>
+                                                </div>
+                                                <div class="risk-legend-item">
+                                                    <div class="risk-legend-color risk-high"></div>
+                                                    <div class="risk-legend-text">Высокий</div>
+                                                </div>
+                                                <div class="risk-legend-item">
+                                                    <div class="risk-legend-color risk-critical"></div>
+                                                    <div class="risk-legend-text">Критический</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-5">
+                                <div class="card h-100">
+                                    <div class="card-header bg-dark text-white">
+                                        <h5 class="mb-0"><i class="fas fa-shield-alt me-2"></i>Ключевые риски и меры по снижению</h5>
+                                    </div>
+                                    <div class="card-body risk-details p-0">
+                                        <div class="accordion" id="riskAccordion">
+                                            <!-- Операционные риски -->
+                                            <div class="accordion-item">
+                                                <h2 class="accordion-header" id="operationalRiskHeading">
+                                                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#operationalRiskCollapse" aria-expanded="true" aria-controls="operationalRiskCollapse">
+                                                        <span class="risk-badge risk-critical">Критический</span> Операционные риски
+                                                    </button>
+                                                </h2>
+                                                <div id="operationalRiskCollapse" class="accordion-collapse collapse show" aria-labelledby="operationalRiskHeading" data-bs-parent="#riskAccordion">
+                                                    <div class="accordion-body">
+                                                        <p><strong>Описание:</strong> Сбои в ключевых операционных процессах, нехватка ресурсов, проблемы с поставщиками.</p>
+                                                        <p><strong>Меры:</strong> Разработка резервных планов, диверсификация поставщиков, внедрение системы контроля качества.</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Финансовые риски -->
+                                            <div class="accordion-item">
+                                                <h2 class="accordion-header" id="financialRiskHeading">
+                                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#financialRiskCollapse" aria-expanded="false" aria-controls="financialRiskCollapse">
+                                                        <span class="risk-badge risk-high">Высокий</span> Финансовые риски
+                                                    </button>
+                                                </h2>
+                                                <div id="financialRiskCollapse" class="accordion-collapse collapse" aria-labelledby="financialRiskHeading" data-bs-parent="#riskAccordion">
+                                                    <div class="accordion-body">
+                                                        <p><strong>Описание:</strong> Недостаток оборотных средств, колебания валютных курсов, рост процентных ставок.</p>
+                                                        <p><strong>Меры:</strong> Создание финансового резерва, гибкая ценовая политика, хеджирование финансовых рисков.</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Рыночные риски -->
+                                            <div class="accordion-item">
+                                                <h2 class="accordion-header" id="marketRiskHeading">
+                                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#marketRiskCollapse" aria-expanded="false" aria-controls="marketRiskCollapse">
+                                                        <span class="risk-badge risk-medium">Средний</span> Рыночные риски
+                                                    </button>
+                                                </h2>
+                                                <div id="marketRiskCollapse" class="accordion-collapse collapse" aria-labelledby="marketRiskHeading" data-bs-parent="#riskAccordion">
+                                                    <div class="accordion-body">
+                                                        <p><strong>Описание:</strong> Появление новых конкурентов, изменение потребительских предпочтений, снижение спроса.</p>
+                                                        <p><strong>Меры:</strong> Регулярный анализ рынка, дифференциация продукта, гибкая маркетинговая стратегия.</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="risk-summary-card">
+                                    <div class="risk-summary-header">
+                                        <h5>Общая оценка рисков для типа бизнеса "{{ result.business_type }}"</h5>
+                                    </div>
+                                    <div class="risk-summary-body">
+                                        <div class="risk-meter-container">
+                                            <div class="risk-meter">
+                                                <div class="risk-meter-scale">
+                                                    <div class="risk-meter-segment very-low"></div>
+                                                    <div class="risk-meter-segment low"></div>
+                                                    <div class="risk-meter-segment medium"></div>
+                                                    <div class="risk-meter-segment high"></div>
+                                                    <div class="risk-meter-segment critical"></div>
+                                                </div>
+                                                <div class="risk-meter-indicator" style="left: 65%;"></div>
+                                                <div class="risk-meter-labels">
+                                                    <span>Низкий</span>
+                                                    <span>Средний</span>
+                                                    <span>Высокий</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <p class="risk-conclusion">
+                                            Для данного типа бизнеса выявлен <strong>повышенный уровень рисков</strong>. 
+                                            Рекомендуется уделить особое внимание операционным и финансовым аспектам проекта, 
+                                            а также разработать детальный план управления рисками.
+                                        </p>
+                                        <div class="risk-strategies">
+                                            <h6><i class="fas fa-tasks me-2"></i>Рекомендуемые стратегии управления рисками:</h6>
+                                            <div class="row">
+                                                <div class="col-md-4">
+                                                    <div class="strategy-card">
+                                                        <div class="strategy-icon"><i class="fas fa-random"></i></div>
+                                                        <div class="strategy-name">Диверсификация</div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <div class="strategy-card">
+                                                        <div class="strategy-icon"><i class="fas fa-umbrella"></i></div>
+                                                        <div class="strategy-name">Страхование</div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <div class="strategy-card">
+                                                        <div class="strategy-icon"><i class="fas fa-clipboard-check"></i></div>
+                                                        <div class="strategy-name">Мониторинг</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     

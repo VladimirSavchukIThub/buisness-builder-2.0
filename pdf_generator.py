@@ -544,6 +544,159 @@ class PDFGenerator:
             
             elements.append(Spacer(1, 0.5*cm))
             
+            # Анализ рисков
+            elements.append(Paragraph("Анализ рисков", self.styles['Heading2Custom']))
+            elements.append(Spacer(1, 0.3*cm))
+            
+            # Таблица с оценкой рисков
+            elements.append(Paragraph("Матрица ключевых рисков для бизнеса", self.styles['BodyTextCustom']))
+            elements.append(Spacer(1, 0.3*cm))
+            
+            # Определяем ключевые риски для данного бизнеса
+            risk_data = [
+                ["Категория риска", "Вероятность", "Влияние", "Уровень риска", "Стратегия снижения"],
+                ["Операционные риски", "Высокая", "Высокое", "Критический", "Разработка резервных планов"],
+                ["Финансовые риски", "Высокая", "Среднее", "Высокий", "Создание финансового резерва"],
+                ["Рыночные риски", "Высокая", "Низкое", "Средний", "Диверсификация клиентской базы"],
+                ["Юридические риски", "Средняя", "Низкое", "Низкий", "Юридический аудит"],
+                ["Репутационные риски", "Средняя", "Среднее", "Средний", "PR-стратегия"],
+            ]
+            
+            # Цвета для уровней риска
+            risk_colors = {
+                "Критический": colors.red,
+                "Высокий": colors.salmon,
+                "Средний": colors.orange,
+                "Низкий": colors.lightblue,
+                "Очень низкий": colors.lightgreen
+            }
+            
+            # Создаем таблицу рисков
+            risk_table = Table(risk_data, colWidths=[doc.width*0.25, doc.width*0.15, doc.width*0.15, doc.width*0.15, doc.width*0.3])
+            
+            # Стиль таблицы
+            risk_table_style = [
+                ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
+                ('FONTNAME', (0, 0), (-1, 0), 'Arial-Bold'),
+                ('FONTSIZE', (0, 0), (-1, 0), 12),
+                ('BOTTOMPADDING', (0, 0), (-1, 0), 6),
+                ('GRID', (0, 0), (-1, -1), 1, colors.black),
+                ('BOX', (0, 0), (-1, -1), 1, colors.black),
+                ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                ('ALIGN', (1, 0), (3, -1), 'CENTER'),
+            ]
+            
+            # Применяем цвета для уровней риска
+            for i in range(1, len(risk_data)):
+                risk_level = risk_data[i][3]
+                if risk_level in risk_colors:
+                    risk_table_style.append(('BACKGROUND', (3, i), (3, i), risk_colors[risk_level]))
+                    # Для критических и высоких рисков делаем текст белым
+                    if risk_level in ["Критический", "Высокий"]:
+                        risk_table_style.append(('TEXTCOLOR', (3, i), (3, i), colors.white))
+            
+            risk_table.setStyle(TableStyle(risk_table_style))
+            elements.append(risk_table)
+            elements.append(Spacer(1, 0.5*cm))
+            
+            # Создаем радар-диаграмму для визуализации рисков
+            try:
+                # Определяем категории рисков и их значения (0-100)
+                categories = ['Операционные', 'Финансовые', 'Рыночные', 
+                             'Юридические', 'Репутационные', 'Логистические']
+                
+                # Значения для каждой категории (0-100, где 100 - максимальный риск)
+                values = [90, 75, 60, 30, 50, 55]
+                
+                # Создаем радар-диаграмму с использованием matplotlib
+                plt.rcdefaults()
+                fig = plt.figure(figsize=(6, 6))
+                
+                # Необходимо замкнуть категории и значения для радар-диаграммы
+                categories = categories + [categories[0]]
+                values = values + [values[0]]
+                
+                # Преобразуем значения в радианы для построения
+                angles = [n / float(len(categories)-1) * 2 * 3.14159 for n in range(len(categories))]
+                
+                # Создаем полярную проекцию
+                ax = plt.subplot(111, polar=True)
+                
+                # Устанавливаем начало координат сверху (север)
+                ax.set_theta_offset(3.14159 / 2)
+                ax.set_theta_direction(-1)
+                
+                # Устанавливаем метки для каждой категории
+                plt.xticks(angles[:-1], categories[:-1])
+                
+                # Устанавливаем границы оси y
+                ax.set_ylim(0, 100)
+                ax.set_yticks([20, 40, 60, 80])
+                ax.set_yticklabels(['20', '40', '60', '80'])
+                
+                # Заполняем диаграмму
+                ax.fill(angles, values, alpha=0.25, color='red')
+                ax.plot(angles, values, color='red', linewidth=2)
+                
+                # Добавляем метки значений
+                for i in range(len(categories)-1):
+                    angle = angles[i]
+                    value = values[i]
+                    ha = 'center'
+                    if angle < 3.14159:
+                        ha = 'left'
+                    elif angle > 3.14159:
+                        ha = 'right'
+                    plt.text(angle, value + 5, f"{value}%", size=8, ha=ha)
+                
+                plt.title('Радар рисков бизнес-модели', size=14)
+                plt.tight_layout()
+                
+                # Сохраняем диаграмму в буфер
+                risk_radar_buffer = io.BytesIO()
+                plt.savefig(risk_radar_buffer, format='png', bbox_inches='tight')
+                risk_radar_buffer.seek(0)
+                plt.close()
+                
+                # Добавляем диаграмму в документ
+                risk_radar_img = Image(risk_radar_buffer, width=400, height=400)
+                elements.append(risk_radar_img)
+                elements.append(Spacer(1, 0.5*cm))
+                print("Радар-диаграмма рисков создана успешно")
+            except Exception as e:
+                print(f"Ошибка при создании радар-диаграммы рисков: {e}")
+                elements.append(Paragraph("Не удалось сгенерировать диаграмму рисков", self.styles['BodyTextCustom']))
+                elements.append(Spacer(1, 0.5*cm))
+            
+            # Добавляем рекомендации по снижению рисков
+            elements.append(Paragraph("Общие рекомендации по управлению рисками:", self.styles['BodyTextCustom']))
+            elements.append(Spacer(1, 0.2*cm))
+            
+            risk_recommendations = [
+                "<b>Диверсификация</b> - распределение ресурсов и инвестиций по различным направлениям для снижения зависимости от одного источника дохода.",
+                "<b>Страхование</b> - оформление страховых полисов для защиты от наиболее существенных рисков (имущественных, ответственности, потери прибыли).",
+                "<b>Резервирование</b> - создание финансовых и материальных резервов для оперативного реагирования на непредвиденные ситуации.",
+                "<b>Мониторинг</b> - систематическое отслеживание ключевых показателей и факторов риска для своевременного принятия мер.",
+                "<b>Планирование действий</b> - разработка планов реагирования на возможные кризисные ситуации."
+            ]
+            
+            for rec in risk_recommendations:
+                elements.append(Paragraph(f"• {rec}", self.styles['BodyTextCustom']))
+            
+            elements.append(Spacer(1, 0.5*cm))
+            
+            # Предупреждение о рисках
+            risk_warning = (
+                "Представленный анализ рисков является предварительным и основан на общих характеристиках выбранного "
+                "типа бизнеса. Для более точной оценки рисков рекомендуется провести детальный анализ с учетом "
+                "специфики конкретной реализации бизнес-проекта и внешних факторов региона."
+            )
+            
+            elements.append(Paragraph(risk_warning, self.styles['BodyTextCustom']))
+            elements.append(Spacer(1, 0.5*cm))
+            
             # Рекомендации
             elements.append(Paragraph("Рекомендации", self.styles['Heading2Custom']))
             
