@@ -1,0 +1,284 @@
+{% extends 'layout.html' %}
+
+{% block title %}База знаний - Бизнес Конструктор{% endblock %}
+
+{% block css %}
+<style>
+    .kb-header {
+        background-color: #f8f9fa;
+        padding: 60px 0;
+        margin-bottom: 50px;
+    }
+    
+    .kb-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 20px;
+        color: #2c3e50;
+    }
+    
+    .kb-description {
+        font-size: 1.1rem;
+        color: #7f8c8d;
+        max-width: 700px;
+        margin-bottom: 30px;
+    }
+    
+    .search-container {
+        max-width: 600px;
+        margin-bottom: 30px;
+    }
+    
+    .search-form {
+        position: relative;
+    }
+    
+    .search-input {
+        height: 50px;
+        padding-right: 50px;
+        border-radius: 25px;
+        border: 1px solid #ddd;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    
+    .search-button {
+        position: absolute;
+        right: 5px;
+        top: 5px;
+        background-color: #3498db;
+        color: white;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+    
+    .search-button:hover {
+        background-color: #2980b9;
+    }
+    
+    .category-filters {
+        display: flex;
+        flex-wrap: wrap;
+        margin-bottom: 40px;
+        gap: 10px;
+    }
+    
+    .category-filter {
+        background-color: #f8f9fa;
+        border: 1px solid #e9ecef;
+        color: #495057;
+        padding: 8px 15px;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .category-filter:hover, .category-filter.active {
+        background-color: #3498db;
+        color: white;
+        border-color: #3498db;
+    }
+    
+    .article-card {
+        border-radius: 8px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        height: 100%;
+        border: 1px solid #ecf0f1;
+        margin-bottom: 30px;
+    }
+    
+    .article-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    
+    .article-image {
+        height: 200px;
+        object-fit: cover;
+    }
+    
+    .article-content {
+        padding: 20px;
+    }
+    
+    .article-category {
+        display: inline-block;
+        background-color: #3498db;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        margin-bottom: 10px;
+    }
+    
+    .article-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 10px;
+        color: #2c3e50;
+        line-height: 1.4;
+    }
+    
+    .article-description {
+        color: #7f8c8d;
+        margin-bottom: 15px;
+        font-size: 0.95rem;
+        line-height: 1.5;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    
+    .article-date {
+        color: #95a5a6;
+        font-size: 0.85rem;
+    }
+    
+    .article-link {
+        display: inline-block;
+        color: #3498db;
+        font-weight: 600;
+        margin-top: 10px;
+        transition: all 0.3s ease;
+    }
+    
+    .article-link:hover {
+        color: #2980b9;
+    }
+    
+    .search-results {
+        padding: 20px 0;
+        margin-bottom: 30px;
+    }
+    
+    .no-results {
+        text-align: center;
+        padding: 50px 0;
+    }
+    
+    .no-results i {
+        font-size: 3rem;
+        color: #e0e0e0;
+        margin-bottom: 20px;
+    }
+    
+    .no-results h3 {
+        color: #7f8c8d;
+        margin-bottom: 15px;
+    }
+    
+    .no-results p {
+        color: #95a5a6;
+        max-width: 500px;
+        margin: 0 auto;
+    }
+    
+    @media (max-width: 768px) {
+        .kb-header {
+            padding: 40px 0;
+        }
+        
+        .kb-title {
+            font-size: 2rem;
+        }
+        
+        .category-filters {
+            justify-content: center;
+        }
+        
+        .article-image {
+            height: 180px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="kb-header">
+    <div class="container">
+        <h1 class="kb-title">База знаний по бизнесу</h1>
+        <p class="kb-description">Добро пожаловать в нашу базу знаний. Здесь вы найдете полезные статьи и ресурсы, которые помогут вам запустить и развивать ваш бизнес.</p>
+        
+        <div class="search-container">
+            <form action="{{ url_for('knowledge_base') }}" method="GET" class="search-form">
+                <input type="text" name="search" class="form-control search-input" placeholder="Поиск статей..." value="{{ request.args.get('search', '') }}">
+                <button type="submit" class="search-button">
+                    <i class="fas fa-search"></i>
+                </button>
+            </form>
+        </div>
+        
+        <div class="category-filters">
+            <a href="{{ url_for('knowledge_base') }}" class="category-filter {% if not request.args.get('category') %}active{% endif %}">Все категории</a>
+            <a href="{{ url_for('knowledge_base', category='Маркетинг') }}" class="category-filter {% if request.args.get('category') == 'Маркетинг' %}active{% endif %}">Маркетинг</a>
+            <a href="{{ url_for('knowledge_base', category='Финансы') }}" class="category-filter {% if request.args.get('category') == 'Финансы' %}active{% endif %}">Финансы</a>
+            <a href="{{ url_for('knowledge_base', category='Стартап') }}" class="category-filter {% if request.args.get('category') == 'Стартап' %}active{% endif %}">Стартап</a>
+            <a href="{{ url_for('knowledge_base', category='Управление') }}" class="category-filter {% if request.args.get('category') == 'Управление' %}active{% endif %}">Управление</a>
+            <a href="{{ url_for('knowledge_base', category='Технологии') }}" class="category-filter {% if request.args.get('category') == 'Технологии' %}active{% endif %}">Технологии</a>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    {% if search_query %}
+    <div class="search-results">
+        <h2>Результаты поиска: "{{ search_query }}"</h2>
+        <p>Найдено {{ articles|length }} статей</p>
+    </div>
+    {% endif %}
+    
+    {% if articles %}
+    <div class="row">
+        {% for article in articles %}
+        <div class="col-md-4">
+            <div class="article-card">
+                <img src="{{ article.image }}" alt="{{ article.title }}" class="article-image w-100">
+                <div class="article-content">
+                    <span class="article-category">{{ article.category }}</span>
+                    <h3 class="article-title">{{ article.title }}</h3>
+                    <p class="article-description">{{ article.description }}</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="article-date"><i class="far fa-calendar-alt"></i> {{ article.date }}</span>
+                        <a href="{{ url_for('article_detail', article_id=article.id) }}" class="article-link">Читать <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="no-results">
+        <i class="far fa-frown"></i>
+        <h3>Ничего не найдено</h3>
+        <p>К сожалению, статьи по вашему запросу не найдены. Попробуйте изменить поисковый запрос или просмотреть все статьи в базе знаний.</p>
+        <a href="{{ url_for('knowledge_base') }}" class="btn btn-primary mt-3">Смотреть все статьи</a>
+    </div>
+    {% endif %}
+    
+    <div class="text-center my-5">
+        <a href="{{ url_for('constructor') }}" class="btn btn-lg btn-success">
+            <i class="fas fa-calculator"></i> Рассчитать стоимость бизнеса
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(function() {
+        // Animation for article cards
+        $('.article-card').each(function(index) {
+            $(this).css({
+                'animation-delay': (index * 0.1) + 's'
+            });
+        });
+    });
+</script>
+{% endblock %} 

@@ -1,0 +1,257 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ article.title }} - Бизнес Конструктор{% endblock %}
+
+{% block css %}
+<style>
+    .article-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    
+    .article-header {
+        margin-bottom: 30px;
+        position: relative;
+    }
+    
+    .article-header h1 {
+        font-size: 2.2rem;
+        font-weight: 700;
+        margin-bottom: 15px;
+        color: #2c3e50;
+    }
+    
+    .article-meta {
+        display: flex;
+        align-items: center;
+        margin-bottom: 20px;
+        color: #7f8c8d;
+        font-size: 0.9rem;
+    }
+    
+    .article-meta .category {
+        background-color: #3498db;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        margin-right: 15px;
+    }
+    
+    .article-meta .date {
+        margin-right: 15px;
+    }
+    
+    .article-featured-image {
+        width: 100%;
+        height: 400px;
+        object-fit: cover;
+        border-radius: 8px;
+        margin-bottom: 30px;
+    }
+    
+    .article-content {
+        line-height: 1.8;
+        color: #34495e;
+        font-size: 1.1rem;
+    }
+    
+    .article-content h2 {
+        margin-top: 40px;
+        margin-bottom: 20px;
+        font-weight: 600;
+        color: #2c3e50;
+    }
+    
+    .article-content h3 {
+        margin-top: 30px;
+        margin-bottom: 15px;
+        font-weight: 600;
+        color: #2c3e50;
+    }
+    
+    .article-content p {
+        margin-bottom: 20px;
+    }
+    
+    .article-content ul, .article-content ol {
+        margin-bottom: 20px;
+        padding-left: 20px;
+    }
+    
+    .article-content li {
+        margin-bottom: 10px;
+    }
+    
+    .related-articles {
+        margin-top: 60px;
+        padding-top: 40px;
+        border-top: 1px solid #ecf0f1;
+    }
+    
+    .related-articles h3 {
+        margin-bottom: 30px;
+        font-weight: 600;
+        color: #2c3e50;
+    }
+    
+    .related-card {
+        border: 1px solid #ecf0f1;
+        border-radius: 8px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        height: 100%;
+    }
+    
+    .related-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    
+    .related-image {
+        height: 160px;
+        object-fit: cover;
+    }
+    
+    .related-content {
+        padding: 15px;
+    }
+    
+    .related-title {
+        font-weight: 600;
+        margin-bottom: 10px;
+        font-size: 1.1rem;
+        color: #2c3e50;
+    }
+    
+    .related-category {
+        display: inline-block;
+        background-color: #3498db;
+        color: white;
+        padding: 3px 8px;
+        border-radius: 15px;
+        font-size: 0.7rem;
+        margin-bottom: 5px;
+    }
+    
+    .back-to-kb {
+        display: inline-block;
+        margin-top: 40px;
+        color: #3498db;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+    
+    .back-to-kb:hover {
+        color: #2980b9;
+    }
+    
+    .social-share {
+        margin-top: 30px;
+        display: flex;
+        align-items: center;
+    }
+    
+    .social-share span {
+        margin-right: 15px;
+        font-weight: 600;
+    }
+    
+    .social-icons a {
+        display: inline-block;
+        margin-right: 10px;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background-color: #f5f5f5;
+        color: #555;
+        text-align: center;
+        line-height: 36px;
+        transition: all 0.3s ease;
+    }
+    
+    .social-icons a:hover {
+        background-color: #3498db;
+        color: white;
+    }
+    
+    @media (max-width: 768px) {
+        .article-header h1 {
+            font-size: 1.8rem;
+        }
+        
+        .article-featured-image {
+            height: 250px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="article-container">
+    <div class="article-header">
+        <a href="{{ url_for('knowledge_base') }}" class="back-link">
+            <i class="fas fa-arrow-left"></i> Назад к базе знаний
+        </a>
+        <h1>{{ article.title }}</h1>
+        <div class="article-meta">
+            <span class="category">{{ article.category }}</span>
+            <span class="date"><i class="far fa-calendar-alt"></i> {{ article.date }}</span>
+            <span class="views"><i class="far fa-eye"></i> 2.5K просмотров</span>
+        </div>
+    </div>
+    
+    <img src="{{ article.image }}" alt="{{ article.title }}" class="article-featured-image">
+    
+    <div class="article-content">
+        {{ article.content|safe }}
+    </div>
+    
+    <div class="social-share">
+        <span>Поделиться статьей:</span>
+        <div class="social-icons">
+            <a href="https://vk.com/share.php?url={{ request.url }}&title={{ article.title }}" target="_blank"><i class="fab fa-vk"></i></a>
+            <a href="https://t.me/share/url?url={{ request.url }}&text={{ article.title }}" target="_blank"><i class="fab fa-telegram"></i></a>
+            <a href="https://api.whatsapp.com/send?text={{ article.title }} {{ request.url }}" target="_blank"><i class="fab fa-whatsapp"></i></a>
+            <a href="mailto:?subject={{ article.title }}&body={{ request.url }}" target="_blank"><i class="far fa-envelope"></i></a>
+        </div>
+    </div>
+    
+    {% if related_articles %}
+    <div class="related-articles">
+        <h3>Похожие статьи</h3>
+        <div class="row">
+            {% for related in related_articles %}
+            <div class="col-md-4 mb-4">
+                <a href="{{ url_for('article_detail', article_id=related.id) }}" class="text-decoration-none">
+                    <div class="related-card">
+                        <img src="{{ related.image }}" alt="{{ related.title }}" class="related-image w-100">
+                        <div class="related-content">
+                            <span class="related-category">{{ related.category }}</span>
+                            <h4 class="related-title">{{ related.title }}</h4>
+                            <small class="text-muted">{{ related.date }}</small>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    
+    <a href="{{ url_for('knowledge_base') }}" class="back-to-kb">
+        <i class="fas fa-arrow-left"></i> Вернуться к базе знаний
+    </a>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Enable tooltips
+    $(function () {
+        $('[data-toggle="tooltip"]').tooltip();
+    });
+</script>
+{% endblock %} 
