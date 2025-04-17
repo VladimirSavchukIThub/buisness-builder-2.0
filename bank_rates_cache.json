@@ -1,0 +1,40 @@
+{
+    "timestamp": 1744872240.5425591,
+    "rates": [
+        {
+            "name": "Сбербанк",
+            "logo": "sberbank_logo.png",
+            "min_rate": 9.5,
+            "max_rate": 15.8,
+            "loan_term": "до 5 лет"
+        },
+        {
+            "name": "ВТБ",
+            "logo": "vtb_logo.png",
+            "min_rate": 10.2,
+            "max_rate": 16.5,
+            "loan_term": "до 7 лет"
+        },
+        {
+            "name": "Альфа-Банк",
+            "logo": "alfabank_logo.png",
+            "min_rate": 9.9,
+            "max_rate": 17.3,
+            "loan_term": "до 3 лет"
+        },
+        {
+            "name": "Тинькофф Бизнес",
+            "logo": "tinkoff_logo.png",
+            "min_rate": 11.0,
+            "max_rate": 18.0,
+            "loan_term": "до 3 лет"
+        },
+        {
+            "name": "Открытие",
+            "logo": "open_logo.png",
+            "min_rate": 10.5,
+            "max_rate": 16.8,
+            "loan_term": "до 5 лет"
+        }
+    ]
+}

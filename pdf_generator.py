@@ -13,6 +13,8 @@ import matplotlib.pyplot as plt
 import matplotlib
 matplotlib.use('Agg')  # Для работы без графического интерфейса
 import matplotlib.font_manager as fm
+import datetime
+from bank_api import BankAPI, get_business_loan_rates, calculate_business_loan
 
 # Добавляем поддержку кириллических шрифтов
 from reportlab.pdfbase import pdfmetrics
@@ -697,6 +699,169 @@ class PDFGenerator:
             elements.append(Paragraph(risk_warning, self.styles['BodyTextCustom']))
             elements.append(Spacer(1, 0.5*cm))
             
+            # Возможности финансирования (кредитование)
+            elements.append(Paragraph("Возможности финансирования бизнеса", self.styles['Heading2Custom']))
+            elements.append(Spacer(1, 0.3*cm))
+            
+            # Информационный текст
+            elements.append(Paragraph(
+                "Для запуска и развития бизнеса часто требуется привлечение внешнего финансирования. "
+                "Ниже представлена информация о текущих кредитных ставках ведущих банков для бизнеса.",
+                self.styles['BodyTextCustom']
+            ))
+            elements.append(Spacer(1, 0.3*cm))
+            
+            try:
+                # Получаем актуальные кредитные ставки
+                bank_api = BankAPI()
+                rates = bank_api.get_rates()
+                best_rate = bank_api.get_best_rate()
+                avg_rates = bank_api.get_average_rate()
+                
+                # Добавляем информацию о лучшем предложении
+                elements.append(Paragraph(f"Лучшее кредитное предложение: <b>{best_rate['name']}</b> - от <b>{best_rate['min_rate']}%</b> годовых", self.styles['BodyTextCustom']))
+                elements.append(Paragraph(f"Средняя ставка по рынку: {avg_rates['avg_min_rate']}% - {avg_rates['avg_max_rate']}%", self.styles['BodyTextCustom']))
+                elements.append(Spacer(1, 0.3*cm))
+                
+                # Создаем таблицу с банковскими ставками
+                bank_data = [["Банк", "Ставка, %", "Срок кредитования"]]
+                
+                for rate in rates:
+                    bank_data.append([
+                        rate['name'],
+                        f"{rate['min_rate']}% - {rate['max_rate']}%",
+                        rate['loan_term']
+                    ])
+                
+                bank_table = Table(bank_data, colWidths=[doc.width*0.4, doc.width*0.3, doc.width*0.3])
+                bank_table.setStyle(TableStyle([
+                    ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                    ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                    ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
+                    ('FONTNAME', (0, 0), (-1, 0), 'Arial-Bold'),
+                    ('FONTSIZE', (0, 0), (-1, 0), 12),
+                    ('BOTTOMPADDING', (0, 0), (-1, 0), 6),
+                    ('ALIGN', (1, 1), (1, -1), 'CENTER'),
+                    ('ALIGN', (2, 1), (2, -1), 'CENTER'),
+                    ('GRID', (0, 0), (-1, -1), 1, colors.black),
+                    ('BOX', (0, 0), (-1, -1), 1, colors.black),
+                    ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                    ('BACKGROUND', (0, 1), (-1, -1), colors.beige)
+                ]))
+                elements.append(bank_table)
+                elements.append(Spacer(1, 0.5*cm))
+                
+                # Пример расчета кредита для бизнеса
+                loan_amount = result_data['price']  # Используем цену бизнеса как сумму кредита
+                interest_rate = best_rate['min_rate']  # Используем лучшую ставку
+                loan_terms = [3, 5, 7]  # Разные сроки кредитования
+                
+                elements.append(Paragraph(f"Пример расчета кредита на сумму {self._format_number(loan_amount)} руб.", self.styles['BodyTextCustom']))
+                elements.append(Spacer(1, 0.3*cm))
+                
+                # Создаем таблицу с расчетами
+                calc_data = [["Срок кредита", "Ставка", "Ежемесячный платеж", "Общая сумма", "Переплата"]]
+                
+                for term in loan_terms:
+                    # Расчет параметров кредита
+                    payment = calculate_business_loan(loan_amount, interest_rate, term)
+                    
+                    calc_data.append([
+                        f"{term} года",
+                        f"{interest_rate}%",
+                        f"{self._format_number(payment['monthly_payment'])} руб.",
+                        f"{self._format_number(payment['total_payment'])} руб.",
+                        f"{self._format_number(payment['total_interest'])} руб."
+                    ])
+                
+                calc_table = Table(calc_data, colWidths=[doc.width*0.15, doc.width*0.15, doc.width*0.25, doc.width*0.22, doc.width*0.23])
+                calc_table.setStyle(TableStyle([
+                    ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                    ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                    ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
+                    ('FONTNAME', (0, 0), (-1, 0), 'Arial-Bold'),
+                    ('FONTSIZE', (0, 0), (-1, 0), 12),
+                    ('BOTTOMPADDING', (0, 0), (-1, 0), 6),
+                    ('ALIGN', (0, 1), (-1, -1), 'CENTER'),
+                    ('GRID', (0, 0), (-1, -1), 1, colors.black),
+                    ('BOX', (0, 0), (-1, -1), 1, colors.black),
+                    ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                    ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                ]))
+                elements.append(calc_table)
+                elements.append(Spacer(1, 0.5*cm))
+                
+                # Сравнение выплат по кредитам в виде графика
+                try:
+                    # Создаем данные для графика
+                    terms = [str(term) for term in loan_terms]
+                    monthly_payments = [calculate_business_loan(loan_amount, interest_rate, term)['monthly_payment'] for term in loan_terms]
+                    total_interests = [calculate_business_loan(loan_amount, interest_rate, term)['total_interest'] for term in loan_terms]
+                    
+                    # Сбрасываем настройки графика
+                    plt.rcdefaults()
+                    plt.figure(figsize=(8, 5), dpi=100)
+                    
+                    # Создаем группированную столбчатую диаграмму
+                    x = range(len(terms))
+                    width = 0.35
+                    
+                    # Переводим значения в тысячи для лучшей читаемости
+                    monthly_payments_k = [p/1000 for p in monthly_payments]
+                    total_interests_k = [i/1000 for i in total_interests]
+                    
+                    plt.bar(x, monthly_payments_k, width, label='Ежемесячный платеж (тыс. руб.)')
+                    plt.bar([i + width for i in x], total_interests_k, width, label='Общая переплата (тыс. руб.)')
+                    
+                    plt.xlabel('Срок кредита (лет)')
+                    plt.ylabel('Сумма (тыс. руб.)')
+                    plt.title('Сравнение параметров кредита при разных сроках')
+                    plt.xticks([i + width/2 for i in x], terms)
+                    plt.legend()
+                    
+                    # Добавляем подписи значений
+                    for i, v in enumerate(monthly_payments_k):
+                        plt.text(i, v + 0.5, f"{v:.1f}", ha='center')
+                    
+                    for i, v in enumerate(total_interests_k):
+                        plt.text(i + width, v + 0.5, f"{v:.1f}", ha='center')
+                    
+                    plt.tight_layout()
+                    
+                    # Сохраняем график во временный буфер
+                    loan_chart_buffer = io.BytesIO()
+                    plt.savefig(loan_chart_buffer, format='png', bbox_inches='tight')
+                    loan_chart_buffer.seek(0)
+                    plt.close()
+                    
+                    # Добавляем график в PDF
+                    loan_chart_img = Image(loan_chart_buffer, width=450, height=250)
+                    elements.append(loan_chart_img)
+                    elements.append(Spacer(1, 0.5*cm))
+                    print("График сравнения кредитов создан успешно")
+                except Exception as e:
+                    print(f"Ошибка при создании графика сравнения кредитов: {e}")
+                    elements.append(Paragraph("Не удалось сгенерировать график сравнения кредитов", self.styles['BodyTextCustom']))
+                    elements.append(Spacer(1, 0.5*cm))
+                
+                # Добавляем примечание о дате обновления ставок
+                current_date = datetime.datetime.now().strftime("%d.%m.%Y")
+                elements.append(Paragraph(
+                    f"* Данные о кредитных ставках актуальны на {current_date}. "
+                    "Для получения точной информации обратитесь напрямую в банк.",
+                    self.styles['BodyTextCustom']
+                ))
+                
+            except Exception as e:
+                print(f"Ошибка при получении кредитных ставок: {e}")
+                elements.append(Paragraph(
+                    "Не удалось получить актуальную информацию о кредитных ставках. "
+                    "Пожалуйста, обратитесь в банк для получения текущих условий кредитования бизнеса.",
+                    self.styles['BodyTextCustom']
+                ))
+            
+            elements.append(Spacer(1, 0.5*cm))
+            
             # Рекомендации
             elements.append(Paragraph("Рекомендации", self.styles['Heading2Custom']))
             
@@ -743,6 +908,26 @@ class PDFGenerator:
                 "Контактный email: info@business-constructor.ru",
                 self.styles['BodyTextCustom']
             ))
+            
+            # # Банковские ставки
+            # elements.append(Paragraph("Банковские ставки", self.styles['Heading2Custom']))
+            # elements.append(Spacer(1, 0.3*cm))
+            
+            # # Получаем ставки из API
+            # bank_api = BankAPI()
+            # loan_rates = get_business_loan_rates(bank_api)
+            
+            # # Создаем таблицу с банковскими ставками
+            # loan_table = Table(loan_rates, colWidths=[doc.width*0.5, doc.width*0.5])
+            # loan_table.setStyle(TableStyle([
+            #     ('BACKGROUND', (0, 0), (1, 0), colors.grey),
+            #     ('TEXTCOLOR', (0, 0), (1, 0), colors.whitesmoke),
+            #     ('ALIGN', (0, 0), (1, 0), 'CENTER'),
+            #     ('FONTNAME', (0, 0), (1, 0), 'Arial-Bold'),
+            #     ('FONTSIZE', (0, 0), (1, 0), 12),
+            # ]))
+            # elements.append(loan_table)
+            # elements.append(Spacer(1, 0.5*cm))
             
             # Собираем документ
             print("Сборка PDF документа...")

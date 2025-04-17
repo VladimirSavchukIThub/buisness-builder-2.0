@@ -310,6 +310,119 @@
         font-weight: 500;
         font-size: 0.9rem;
     }
+    
+    /* Стили для раздела интеграции с банками */
+    .bank-integration .card {
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        border: none;
+    }
+    
+    .bank-list {
+        max-height: 350px;
+        overflow-y: auto;
+    }
+    
+    .bank-item {
+        padding: 12px 15px;
+        border-bottom: 1px solid #eee;
+        transition: background-color 0.2s;
+    }
+    
+    .bank-item:hover {
+        background-color: #f8f9fa;
+    }
+    
+    .bank-item:last-child {
+        border-bottom: none;
+    }
+    
+    .bank-logo {
+        width: 40px;
+        height: 40px;
+        object-fit: contain;
+        background-color: #fff;
+        border-radius: 4px;
+        padding: 4px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    
+    .bank-name {
+        font-weight: 600;
+        margin-bottom: 2px;
+    }
+    
+    .bank-rate {
+        color: #0d6efd;
+        font-weight: 700;
+    }
+    
+    .bank-term {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+    
+    /* Кредитный калькулятор */
+    .loan-result-item {
+        margin-bottom: 1rem;
+        padding: 10px;
+        border-radius: 4px;
+        background-color: #f8f9fa;
+    }
+    
+    .loan-result-label {
+        font-size: 0.85rem;
+        color: #6c757d;
+        margin-bottom: 2px;
+    }
+    
+    .loan-result-value {
+        font-weight: 700;
+        font-size: 1.1rem;
+        color: #0d6efd;
+    }
+    
+    .loan-results-title {
+        position: relative;
+        padding-bottom: 10px;
+    }
+    
+    .loan-results-title:after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 50px;
+        height: 3px;
+        background-color: #0d6efd;
+    }
+    
+    /* Сравнение кредитов */
+    .loan-comparison th {
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+    
+    .loan-comparison td {
+        vertical-align: middle;
+    }
+    
+    .loan-comparison .best-option {
+        background-color: rgba(25, 135, 84, 0.1);
+    }
+    
+    .loan-comparison .best-option td:first-child {
+        position: relative;
+    }
+    
+    .loan-comparison .best-option td:first-child:before {
+        content: '\f005';
+        font-family: 'Font Awesome 5 Free';
+        font-weight: 900;
+        position: absolute;
+        left: 5px;
+        font-size: 0.7rem;
+        color: gold;
+    }
 </style>
 {% endblock %}
 
@@ -781,6 +894,172 @@
                         </div>
                     </div>
                     
+                    <hr>
+                    
+                    <div class="bank-integration mt-4">
+                        <h3 class="mb-3">Финансирование бизнеса</h3>
+                        
+                        <div class="row mb-4">
+                            <div class="col-md-5">
+                                <div class="card">
+                                    <div class="card-header bg-primary text-white">
+                                        <h5 class="mb-0"><i class="fas fa-percentage me-2"></i>Актуальные кредитные ставки</h5>
+                                    </div>
+                                    <div class="card-body p-0">
+                                        <div class="bank-rates-loading text-center py-5">
+                                            <div class="spinner-border text-primary" role="status">
+                                                <span class="visually-hidden">Загрузка...</span>
+                                            </div>
+                                            <p class="mt-2">Получение актуальных ставок...</p>
+                                        </div>
+                                        
+                                        <div class="bank-rates-container d-none">
+                                            <div class="best-rate-banner p-3 bg-light border-bottom">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="best-rate-badge me-3">
+                                                        <i class="fas fa-award fs-3 text-warning"></i>
+                                                    </div>
+                                                    <div>
+                                                        <p class="mb-0">Лучшая ставка:</p>
+                                                        <h5 class="best-rate-value text-success mb-0"></h5>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="bank-list">
+                                                <!-- Банки будут добавлены динамически -->
+                                            </div>
+                                            
+                                            <div class="bank-rates-footer p-2 text-center">
+                                                <small class="text-muted">Ставки обновлены: <span class="rates-updated-time"></span></small>
+                                                <button class="btn btn-sm btn-outline-primary ms-2 refresh-rates-btn">
+                                                    <i class="fas fa-sync-alt me-1"></i>Обновить
+                                                </button>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="bank-rates-error d-none p-3 text-center text-danger">
+                                            <i class="fas fa-exclamation-circle fs-4 mb-2"></i>
+                                            <p>Не удалось загрузить данные о кредитных ставках.</p>
+                                            <button class="btn btn-sm btn-outline-danger refresh-rates-btn">
+                                                <i class="fas fa-sync-alt me-1"></i>Повторить
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-7">
+                                <div class="card">
+                                    <div class="card-header bg-success text-white">
+                                        <h5 class="mb-0"><i class="fas fa-calculator me-2"></i>Кредитный калькулятор</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <form id="loanCalculatorForm" class="loan-calculator">
+                                            <div class="row mb-3">
+                                                <div class="col-md-6">
+                                                    <label for="loanAmount" class="form-label">Сумма кредита (руб.)</label>
+                                                    <div class="input-group">
+                                                        <input type="number" class="form-control" id="loanAmount" value="{{ result.price }}" min="100000" step="10000">
+                                                        <span class="input-group-text">₽</span>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label for="interestRate" class="form-label">Процентная ставка (%)</label>
+                                                    <div class="input-group">
+                                                        <input type="number" class="form-control" id="interestRate" value="10.5" min="1" max="30" step="0.1">
+                                                        <span class="input-group-text">%</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row mb-3">
+                                                <div class="col-md-6">
+                                                    <label for="loanTerm" class="form-label">Срок кредита (лет)</label>
+                                                    <div class="input-group">
+                                                        <input type="number" class="form-control" id="loanTerm" value="3" min="1" max="20" step="1">
+                                                        <span class="input-group-text">лет</span>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6 d-flex align-items-end">
+                                                    <button type="submit" class="btn btn-primary btn-block w-100">
+                                                        <i class="fas fa-calculator me-2"></i>Рассчитать
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </form>
+                                        
+                                        <div class="loan-results mt-4 d-none">
+                                            <h5 class="loan-results-title mb-3">Результаты расчета</h5>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="loan-result-item">
+                                                        <div class="loan-result-label">Ежемесячный платеж:</div>
+                                                        <div class="loan-result-value monthly-payment">-</div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="loan-result-item">
+                                                        <div class="loan-result-label">Количество платежей:</div>
+                                                        <div class="loan-result-value total-payments">-</div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="loan-result-item">
+                                                        <div class="loan-result-label">Общая сумма выплат:</div>
+                                                        <div class="loan-result-value total-payment">-</div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="loan-result-item">
+                                                        <div class="loan-result-label">Переплата по кредиту:</div>
+                                                        <div class="loan-result-value total-interest">-</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="loan-error mt-3 d-none">
+                                            <div class="alert alert-danger mb-0">
+                                                <i class="fas fa-exclamation-circle me-2"></i>
+                                                <span class="loan-error-message">Ошибка при расчете кредита.</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="loan-comparison mt-3 d-none">
+                            <div class="card">
+                                <div class="card-header bg-info text-white">
+                                    <h5 class="mb-0"><i class="fas fa-balance-scale me-2"></i>Сравнение кредитных предложений</h5>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div class="table-responsive">
+                                        <table class="table table-striped table-hover mb-0">
+                                            <thead>
+                                                <tr>
+                                                    <th>Банк</th>
+                                                    <th>Ставка</th>
+                                                    <th>Ежемесячный платеж</th>
+                                                    <th>Общая сумма выплат</th>
+                                                    <th>Переплата</th>
+                                                    <th>Срок</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="loan-comparison-tbody">
+                                                <!-- Данные будут добавлены динамически -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div class="card-footer text-muted">
+                                    <small>* Расчет является приблизительным. Для получения точных условий обратитесь напрямую в банк.</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <div class="action-buttons mt-5 text-center">
                         <a href="{{ url_for('constructor') }}" class="btn btn-outline-primary btn-lg me-3">
                             <i class="fas fa-edit me-2"></i>Изменить параметры
@@ -943,5 +1222,259 @@
             }
         }
     });
+    
+    // Банковская интеграция - получение актуальных кредитных ставок
+    function loadBankRates(forceRefresh = false) {
+        // Показываем индикатор загрузки
+        document.querySelector('.bank-rates-loading').classList.remove('d-none');
+        document.querySelector('.bank-rates-container').classList.add('d-none');
+        document.querySelector('.bank-rates-error').classList.add('d-none');
+        
+        // Делаем запрос к API
+        const url = `/api/bank-rates${forceRefresh ? '?force_refresh=true' : ''}`;
+        
+        fetch(url)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP ошибка! Статус: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Скрываем индикатор загрузки
+                document.querySelector('.bank-rates-loading').classList.add('d-none');
+                document.querySelector('.bank-rates-container').classList.remove('d-none');
+                
+                // Отображаем данные банков
+                renderBankRates(data);
+                
+                // Обновляем дату обновления ставок
+                const now = new Date();
+                document.querySelector('.rates-updated-time').textContent = now.toLocaleString();
+            })
+            .catch(error => {
+                console.error('Ошибка при загрузке кредитных ставок:', error);
+                
+                // Скрываем индикатор загрузки и показываем ошибку
+                document.querySelector('.bank-rates-loading').classList.add('d-none');
+                document.querySelector('.bank-rates-error').classList.remove('d-none');
+            });
+    }
+    
+    // Отображение данных о кредитных ставках
+    function renderBankRates(data) {
+        const bankList = document.querySelector('.bank-list');
+        const rates = data.rates;
+        const best = data.best;
+        
+        // Очищаем список банков
+        bankList.innerHTML = '';
+        
+        // Отображаем лучшую ставку
+        document.querySelector('.best-rate-value').textContent = `${best.name}: ${best.min_rate}%`;
+        
+        // Добавляем каждый банк в список
+        rates.forEach(bank => {
+            const bankItem = document.createElement('div');
+            bankItem.className = 'bank-item';
+            
+            // Путь к логотипу
+            const logoPath = `/static/images/banks/${bank.logo}`;
+            
+            bankItem.innerHTML = `
+                <div class="d-flex align-items-center">
+                    <img src="${logoPath}" alt="${bank.name}" class="bank-logo me-3" onerror="this.src='/static/images/banks/default_bank.png'">
+                    <div>
+                        <div class="bank-name">${bank.name}</div>
+                        <div class="bank-rate">${bank.min_rate}% - ${bank.max_rate}%</div>
+                        <div class="bank-term">${bank.loan_term}</div>
+                    </div>
+                </div>
+            `;
+            
+            // Добавляем обработчик для выбора этой ставки в калькуляторе
+            bankItem.addEventListener('click', function() {
+                // Устанавливаем минимальную ставку этого банка в калькулятор
+                document.getElementById('interestRate').value = bank.min_rate;
+                // Если есть активные результаты, пересчитываем кредит
+                if (!document.querySelector('.loan-results').classList.contains('d-none')) {
+                    calculateLoan();
+                }
+            });
+            
+            bankList.appendChild(bankItem);
+        });
+        
+        // Если у нас есть данные для калькулятора, обновляем таблицу сравнения
+        if (!document.querySelector('.loan-results').classList.contains('d-none')) {
+            updateLoanComparison(rates);
+        }
+    }
+    
+    // Расчет кредита
+    function calculateLoan() {
+        // Получаем значения из формы
+        const loanAmount = parseFloat(document.getElementById('loanAmount').value);
+        const interestRate = parseFloat(document.getElementById('interestRate').value);
+        const loanTerm = parseFloat(document.getElementById('loanTerm').value);
+        
+        // Проверяем валидность данных
+        if (isNaN(loanAmount) || isNaN(interestRate) || isNaN(loanTerm) || 
+            loanAmount <= 0 || interestRate < 0 || loanTerm <= 0) {
+            showLoanError('Пожалуйста, введите корректные значения для расчета.');
+            return;
+        }
+        
+        // Скрываем сообщение об ошибке, если оно было
+        document.querySelector('.loan-error').classList.add('d-none');
+        
+        // Отправляем запрос к API для расчета кредита
+        fetch('/api/calculate-loan', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                loan_amount: loanAmount,
+                interest_rate: interestRate,
+                loan_term_years: loanTerm
+            })
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(data => {
+                    throw new Error(data.error || 'Ошибка при расчете кредита');
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            // Отображаем результаты расчета
+            document.querySelector('.loan-results').classList.remove('d-none');
+            
+            // Форматирование чисел для отображения
+            const formatter = new Intl.NumberFormat('ru-RU');
+            
+            document.querySelector('.monthly-payment').textContent = formatter.format(data.monthly_payment) + ' руб.';
+            document.querySelector('.total-payments').textContent = data.total_payments;
+            document.querySelector('.total-payment').textContent = formatter.format(data.total_payment) + ' руб.';
+            document.querySelector('.total-interest').textContent = formatter.format(data.total_interest) + ' руб.';
+            
+            // Обновляем таблицу сравнения, если у нас есть данные о ставках
+            if (!document.querySelector('.bank-rates-container').classList.contains('d-none')) {
+                // Получаем данные о ставках
+                fetch('/api/bank-rates')
+                    .then(response => response.json())
+                    .then(bankData => {
+                        updateLoanComparison(bankData.rates);
+                    })
+                    .catch(error => {
+                        console.error('Ошибка при загрузке ставок для сравнения:', error);
+                    });
+            }
+        })
+        .catch(error => {
+            showLoanError(error.message);
+        });
+    }
+    
+    // Отображение ошибки расчета кредита
+    function showLoanError(message) {
+        const errorElement = document.querySelector('.loan-error');
+        errorElement.classList.remove('d-none');
+        errorElement.querySelector('.loan-error-message').textContent = message;
+    }
+    
+    // Обновление таблицы сравнения кредитных предложений
+    function updateLoanComparison(rates) {
+        // Получаем текущие параметры кредита
+        const loanAmount = parseFloat(document.getElementById('loanAmount').value);
+        const loanTerm = parseFloat(document.getElementById('loanTerm').value);
+        
+        if (isNaN(loanAmount) || isNaN(loanTerm) || rates.length === 0) {
+            return;
+        }
+        
+        // Отображаем секцию сравнения
+        document.querySelector('.loan-comparison').classList.remove('d-none');
+        
+        const tbody = document.querySelector('.loan-comparison-tbody');
+        tbody.innerHTML = '';
+        
+        // Создаем массив для сортировки банков по месячному платежу
+        const bankComparisons = [];
+        
+        // Для каждого банка рассчитываем параметры кредита
+        rates.forEach(bank => {
+            // Используем минимальную ставку банка
+            const rate = bank.min_rate;
+            
+            // Расчет платежа
+            const monthlyRate = rate / 100 / 12;
+            const totalPayments = loanTerm * 12;
+            let monthlyPayment;
+            
+            if (monthlyRate === 0) {
+                monthlyPayment = loanAmount / totalPayments;
+            } else {
+                monthlyPayment = loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, totalPayments)) / (Math.pow(1 + monthlyRate, totalPayments) - 1);
+            }
+            
+            const totalPayment = monthlyPayment * totalPayments;
+            const totalInterest = totalPayment - loanAmount;
+            
+            bankComparisons.push({
+                name: bank.name,
+                rate: rate,
+                monthlyPayment: monthlyPayment,
+                totalPayment: totalPayment,
+                totalInterest: totalInterest,
+                loanTerm: bank.loan_term
+            });
+        });
+        
+        // Сортировка по месячному платежу (от меньшего к большему)
+        bankComparisons.sort((a, b) => a.monthlyPayment - b.monthlyPayment);
+        
+        // Форматирование чисел
+        const formatter = new Intl.NumberFormat('ru-RU');
+        
+        // Добавляем строки в таблицу
+        bankComparisons.forEach((bank, index) => {
+            const row = document.createElement('tr');
+            
+            // Лучшему предложению добавляем класс
+            if (index === 0) {
+                row.classList.add('best-option');
+            }
+            
+            row.innerHTML = `
+                <td>${bank.name}</td>
+                <td>${bank.rate}%</td>
+                <td>${formatter.format(bank.monthlyPayment.toFixed(2))} руб.</td>
+                <td>${formatter.format(bank.totalPayment.toFixed(2))} руб.</td>
+                <td>${formatter.format(bank.totalInterest.toFixed(2))} руб.</td>
+                <td>${bank.loanTerm}</td>
+            `;
+            
+            tbody.appendChild(row);
+        });
+    }
+    
+    // Обработчик формы калькулятора
+    document.getElementById('loanCalculatorForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        calculateLoan();
+    });
+    
+    // Обработчик кнопки обновления ставок
+    document.querySelectorAll('.refresh-rates-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            loadBankRates(true);
+        });
+    });
+    
+    // Загружаем кредитные ставки при загрузке страницы
+    loadBankRates();
 </script>
 {% endblock %} 

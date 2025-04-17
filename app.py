@@ -5,6 +5,8 @@ import os
 import locale
 from pdf_generator import generate_pdf
 import urllib.parse
+import json
+from bank_api import get_business_loan_rates, calculate_business_loan, BankAPI
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)  # для работы с сессиями и flash-сообщениями
@@ -200,6 +202,60 @@ def download_pdf():
         print(f"Критическая ошибка при создании PDF: {e}")
         print(traceback.format_exc())
         return make_response(f"Произошла ошибка при создании PDF: {str(e)}", 500)
+
+# Маршрут для получения кредитных ставок
+@app.route('/api/bank-rates')
+def get_bank_rates():
+    try:
+        # Получаем параметр force_refresh из запроса
+        force_refresh = request.args.get('force_refresh', 'false').lower() == 'true'
+        
+        # Получаем актуальные кредитные ставки
+        rates = get_business_loan_rates(force_refresh)
+        
+        # Получаем средние ставки
+        api = BankAPI()
+        average_rates = api.get_average_rate()
+        best_rate = api.get_best_rate()
+        
+        # Формируем ответ
+        response_data = {
+            'rates': rates,
+            'average': average_rates,
+            'best': best_rate
+        }
+        
+        return make_response(json.dumps(response_data), 200, {'Content-Type': 'application/json'})
+    except Exception as e:
+        print(f"Ошибка при получении кредитных ставок: {e}")
+        return make_response(json.dumps({'error': str(e)}), 500, {'Content-Type': 'application/json'})
+
+# Маршрут для расчета кредита
+@app.route('/api/calculate-loan', methods=['POST'])
+def calculate_loan():
+    try:
+        # Получаем данные из запроса
+        loan_data = request.get_json()
+        
+        if not loan_data:
+            return make_response(json.dumps({'error': 'Отсутствуют данные для расчета'}), 400, {'Content-Type': 'application/json'})
+        
+        # Получаем параметры кредита
+        loan_amount = float(loan_data.get('loan_amount', 0))
+        interest_rate = float(loan_data.get('interest_rate', 0))
+        loan_term_years = float(loan_data.get('loan_term_years', 0))
+        
+        # Проверяем валидность данных
+        if loan_amount <= 0 or interest_rate < 0 or loan_term_years <= 0:
+            return make_response(json.dumps({'error': 'Некорректные параметры кредита'}), 400, {'Content-Type': 'application/json'})
+        
+        # Выполняем расчет
+        result = calculate_business_loan(loan_amount, interest_rate, loan_term_years)
+        
+        return make_response(json.dumps(result), 200, {'Content-Type': 'application/json'})
+    except Exception as e:
+        print(f"Ошибка при расчете кредита: {e}")
+        return make_response(json.dumps({'error': str(e)}), 500, {'Content-Type': 'application/json'})
 
 if __name__ == '__main__':
     app.run(debug=True) 
