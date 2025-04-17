@@ -12,6 +12,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
     <!-- AOS - Animate On Scroll -->
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <!-- Chatbot CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/chatbot.css') }}">
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     {% block css %}{% endblock %}
@@ -123,6 +125,8 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <!-- AOS - Animate On Scroll Library -->
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <!-- Chatbot JS -->
+    <script src="{{ url_for('static', filename='js/chatbot.js') }}"></script>
     <script>
         // Инициализация AOS
         AOS.init({

@@ -7,9 +7,13 @@ from pdf_generator import generate_pdf
 import urllib.parse
 import json
 from bank_api import get_business_loan_rates, calculate_business_loan, BankAPI
+from chatbot import ChatBot  # Импортируем наш класс чат-бота
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)  # для работы с сессиями и flash-сообщениями
+
+# Инициализация чат-бота
+chatbot = ChatBot()
 
 # Пытаемся установить русскую локаль для Windows
 try:
@@ -484,6 +488,32 @@ def calculate_loan():
     except Exception as e:
         print(f"Ошибка при расчете кредита: {e}")
         return make_response(json.dumps({'error': str(e)}), 500, {'Content-Type': 'application/json'})
+
+# Маршрут для API чат-бота
+@app.route('/api/chatbot', methods=['POST'])
+def chat_api():
+    try:
+        # Получаем сообщение пользователя из запроса
+        data = request.get_json()
+        
+        if not data or 'message' not in data:
+            return jsonify({'error': 'Отсутствует сообщение в запросе'}), 400
+        
+        user_message = data['message']
+        print(f"Запрос к чат-боту: {user_message}")
+        
+        # Если это первое сообщение (пустое), возвращаем приветствие
+        if not user_message.strip():
+            return jsonify({'response': chatbot.get_greeting()})
+        
+        # Получаем ответ от чат-бота
+        response = chatbot.get_response(user_message)
+        
+        return jsonify({'response': response})
+    except Exception as e:
+        print(f"Ошибка в работе чат-бота: {e}")
+        print(traceback.format_exc())
+        return jsonify({'error': 'Внутренняя ошибка сервера'}), 500
 
 if __name__ == '__main__':
     app.run(debug=True) 
