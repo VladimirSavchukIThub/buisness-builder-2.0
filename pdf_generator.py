@@ -341,6 +341,95 @@ class PDFGenerator:
                 elements.append(Paragraph("Информация о типе бизнеса недоступна для сравнения", self.styles['BodyTextCustom']))
                 elements.append(Spacer(1, 0.5*cm))
             
+            # Детализация расходов
+            elements.append(Paragraph("Детализация расходов", self.styles['Heading2Custom']))
+            
+            # Рассчитываем разбивку стоимости, если она не предоставлена
+            total_price = result_data['price']
+            cost_breakdown = result_data.get('cost_breakdown', None)
+            
+            if not cost_breakdown:
+                # Используем стандартное распределение затрат
+                cost_breakdown = {
+                    "Оборудование и техника": round(total_price * 0.35),
+                    "Аренда помещения": round(total_price * 0.15),
+                    "Персонал и зарплаты": round(total_price * 0.25),
+                    "Маркетинг и реклама": round(total_price * 0.10),
+                }
+                # Вычисляем прочие расходы, чтобы сумма совпадала с общей стоимостью
+                other_costs = total_price - sum(cost_breakdown.values())
+                cost_breakdown["Прочие расходы"] = other_costs
+            
+            # Создаем таблицу разбивки расходов
+            cost_data = [["Категория затрат", "Сумма (руб.)", "Доля (%)"]]
+            
+            # Добавляем данные в таблицу
+            for category, amount in cost_breakdown.items():
+                percentage = round((amount / total_price) * 100, 1)
+                cost_data.append([category, f"{self._format_number(amount)}", f"{percentage}%"])
+            
+            # Добавляем строку с итогами
+            cost_data.append(["Итого", f"{self._format_number(total_price)}", "100%"])
+            
+            # Создаем таблицу
+            cost_table = Table(cost_data, colWidths=[doc.width*0.5, doc.width*0.3, doc.width*0.2])
+            cost_table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (2, 0), colors.grey),
+                ('TEXTCOLOR', (0, 0), (2, 0), colors.whitesmoke),
+                ('ALIGN', (0, 0), (2, 0), 'CENTER'),
+                ('FONTNAME', (0, 0), (2, 0), 'Arial-Bold'),
+                ('FONTSIZE', (0, 0), (2, 0), 12),
+                ('BOTTOMPADDING', (0, 0), (2, 0), 6),
+                ('ALIGN', (1, 1), (2, -1), 'RIGHT'),
+                ('GRID', (0, 0), (-1, -1), 1, colors.black),
+                ('BOX', (0, 0), (-1, -1), 1, colors.black),
+                ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                ('BACKGROUND', (0, 1), (-1, -2), colors.beige),
+                ('BACKGROUND', (0, -1), (-1, -1), colors.lightgrey),
+                ('FONTNAME', (0, -1), (-1, -1), 'Arial-Bold'),
+            ]))
+            elements.append(cost_table)
+            elements.append(Spacer(1, 0.5*cm))
+            
+            # Добавляем круговую диаграмму для расходов
+            try:
+                pie_categories = list(cost_breakdown.keys())
+                pie_values = list(cost_breakdown.values())
+                
+                print(f"Создание круговой диаграммы расходов: {pie_values}, {pie_categories}")
+                cost_pie_buffer = self._create_pie_chart(
+                    pie_values,
+                    pie_categories,
+                    "Структура расходов по категориям"
+                )
+                
+                cost_pie_img = Image(cost_pie_buffer, width=400, height=300)
+                elements.append(cost_pie_img)
+                elements.append(Spacer(1, 0.5*cm))
+                print("Круговая диаграмма расходов создана успешно")
+            except Exception as e:
+                print(f"Ошибка при создании круговой диаграммы расходов: {e}")
+                # Если не удается создать диаграмму, добавляем текстовое описание
+                elements.append(Paragraph("Не удалось сгенерировать диаграмму распределения расходов", self.styles['BodyTextCustom']))
+                elements.append(Spacer(1, 0.5*cm))
+            
+            # Описание категорий расходов
+            elements.append(Paragraph("Пояснения к категориям расходов:", self.styles['BodyTextCustom']))
+            elements.append(Spacer(1, 0.3*cm))
+            
+            category_explanations = [
+                "<b>Оборудование и техника</b> - включает стоимость необходимого оборудования, компьютерной техники, мебели и других материальных активов.",
+                "<b>Аренда помещения</b> - расходы на аренду и подготовку помещения для бизнеса.",
+                "<b>Персонал и зарплаты</b> - затраты на наём и оплату труда сотрудников в первые месяцы работы.",
+                "<b>Маркетинг и реклама</b> - бюджет на маркетинговые мероприятия, рекламу и продвижение.",
+                "<b>Прочие расходы</b> - включают административные расходы, юридические услуги, страхование и прочие затраты."
+            ]
+            
+            for explanation in category_explanations:
+                elements.append(Paragraph(explanation, self.styles['BodyTextCustom']))
+            
+            elements.append(Spacer(1, 0.5*cm))
+            
             # Рекомендации
             elements.append(Paragraph("Рекомендации", self.styles['Heading2Custom']))
             

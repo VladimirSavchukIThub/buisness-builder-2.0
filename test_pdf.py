@@ -11,7 +11,15 @@ def test_pdf_generator():
         "business_type": "Интернет-магазин",
         "business_size": "Средний",
         "price": 250000,
-        "features": ["Сайт с каталогом", "CRM система", "Система аналитики"]
+        "features": ["Сайт с каталогом", "CRM система", "Система аналитики"],
+        # Добавляем тестовые данные для разбивки расходов
+        "cost_breakdown": {
+            "Оборудование и техника": 80000,
+            "Аренда помещения": 40000,
+            "Персонал и зарплаты": 65000,
+            "Маркетинг и реклама": 30000,
+            "Прочие расходы": 35000
+        }
     }
     
     business_options = {
@@ -37,7 +45,14 @@ def test_pdf_generator():
         # Создаем экземпляр генератора PDF
         generator = PDFGenerator()
         
+        # Выводим информацию о разбивке расходов
+        print("Тестовые данные включают разбивку расходов:")
+        for category, amount in result_data["cost_breakdown"].items():
+            percentage = round((amount / result_data["price"]) * 100, 1)
+            print(f"  - {category}: {amount} руб. ({percentage}%)")
+        
         # Генерируем PDF
+        print("Генерация PDF...")
         pdf_buffer = generator.generate_business_plan_pdf(result_data, business_options)
         
         # Сохраняем PDF в файл
@@ -47,6 +62,7 @@ def test_pdf_generator():
         
         print(f"PDF файл успешно создан и сохранен в {output_path}")
         print(f"Размер файла: {os.path.getsize(output_path)} байт")
+        print("Пожалуйста, проверьте файл на наличие всех секций, включая новый раздел с детализацией расходов")
         return True
     except Exception as e:
         print(f"Ошибка при тестировании PDF генератора: {e}")

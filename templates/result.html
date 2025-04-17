@@ -114,6 +114,90 @@
                         </div>
                     </div>
                     
+                    <div class="cost-breakdown mt-4">
+                        <h3 class="mb-3">Детализация расходов</h3>
+                        <div class="table-responsive">
+                            <table class="table table-striped table-bordered">
+                                <thead class="table-primary">
+                                    <tr>
+                                        <th>Категория затрат</th>
+                                        <th>Сумма (руб.)</th>
+                                        <th>Доля (%)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% set total = result.price %}
+                                    {% if result.cost_breakdown %}
+                                        {% for category, amount in result.cost_breakdown.items() %}
+                                        <tr>
+                                            <td>{{ category }}</td>
+                                            <td>{{ amount|number_format }}</td>
+                                            <td>{{ ((amount / total) * 100)|round(1) }}%</td>
+                                        </tr>
+                                        {% endfor %}
+                                    {% else %}
+                                        {% set equipment_cost = (total * 0.35)|round|int %}
+                                        {% set rent_cost = (total * 0.15)|round|int %}
+                                        {% set personnel_cost = (total * 0.25)|round|int %}
+                                        {% set marketing_cost = (total * 0.10)|round|int %}
+                                        {% set other_cost = total - equipment_cost - rent_cost - personnel_cost - marketing_cost %}
+                                        <tr>
+                                            <td>Оборудование и техника</td>
+                                            <td>{{ equipment_cost|number_format }}</td>
+                                            <td>35%</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Аренда помещения</td>
+                                            <td>{{ rent_cost|number_format }}</td>
+                                            <td>15%</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Персонал и зарплаты</td>
+                                            <td>{{ personnel_cost|number_format }}</td>
+                                            <td>25%</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Маркетинг и реклама</td>
+                                            <td>{{ marketing_cost|number_format }}</td>
+                                            <td>10%</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Прочие расходы</td>
+                                            <td>{{ other_cost|number_format }}</td>
+                                            <td>15%</td>
+                                        </tr>
+                                    {% endif %}
+                                </tbody>
+                                <tfoot class="table-secondary">
+                                    <tr>
+                                        <th>Итого</th>
+                                        <th>{{ result.price|number_format }}</th>
+                                        <th>100%</th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                        
+                        <div class="row mt-4">
+                            <div class="col-md-8 offset-md-2">
+                                <div class="card border-info">
+                                    <div class="card-header bg-info text-white">
+                                        <i class="fas fa-info-circle me-2"></i>Важная информация
+                                    </div>
+                                    <div class="card-body">
+                                        <p class="card-text">
+                                            Представленная разбивка стоимости отражает приблизительное распределение затрат для выбранного типа бизнеса. 
+                                            Фактические расходы могут отличаться в зависимости от региона, выбранных поставщиков и текущих рыночных условий.
+                                        </p>
+                                        <p class="card-text mb-0">
+                                            Более подробный анализ расходов доступен в PDF-версии бизнес-плана.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <div class="action-buttons mt-5 text-center">
                         <a href="{{ url_for('constructor') }}" class="btn btn-outline-primary btn-lg me-3">
                             <i class="fas fa-edit me-2"></i>Изменить параметры
