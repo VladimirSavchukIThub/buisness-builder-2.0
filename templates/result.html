@@ -4,6 +4,50 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/result.css') }}">
+<style>
+    /* Стили для раздела прогноза окупаемости */
+    .roi-prediction .card {
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        transition: transform 0.3s ease;
+    }
+    
+    .roi-prediction .card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .roi-prediction table {
+        margin-bottom: 0;
+    }
+    
+    .roi-prediction th {
+        font-weight: 600;
+    }
+    
+    .factors-list {
+        padding-left: 0;
+        list-style-type: none;
+    }
+    
+    .factors-list li {
+        border-bottom: 1px solid #eee;
+        padding: 10px 0;
+    }
+    
+    .factors-list li:last-child {
+        border-bottom: none;
+    }
+    
+    .factors-list li strong {
+        display: block;
+        margin-bottom: 5px;
+        color: #0d6efd;
+    }
+    
+    .factors-list li p {
+        margin-bottom: 0;
+        font-size: 0.9rem;
+    }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -195,6 +239,91 @@
                                     </div>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="roi-prediction mt-4">
+                        <h3 class="mb-3">Прогноз окупаемости инвестиций</h3>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card h-100">
+                                    <div class="card-header bg-primary text-white">
+                                        <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Ключевые показатели окупаемости</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        {% set total_investment = result.price %}
+                                        {% set monthly_revenue = (total_investment * 0.15)|round|int %}
+                                        {% set monthly_expenses = (monthly_revenue * 0.7)|round|int %}
+                                        {% set monthly_profit = monthly_revenue - monthly_expenses %}
+                                        {% set months_to_roi = (total_investment / monthly_profit)|round|int %}
+                                        
+                                        <table class="table table-hover">
+                                            <tbody>
+                                                <tr>
+                                                    <th>Общие инвестиции</th>
+                                                    <td class="text-end">{{ total_investment|number_format }} руб.</td>
+                                                </tr>
+                                                <tr>
+                                                    <th>Прогнозируемый ежемесячный доход</th>
+                                                    <td class="text-end">{{ monthly_revenue|number_format }} руб.</td>
+                                                </tr>
+                                                <tr>
+                                                    <th>Прогнозируемые ежемесячные расходы</th>
+                                                    <td class="text-end">{{ monthly_expenses|number_format }} руб.</td>
+                                                </tr>
+                                                <tr>
+                                                    <th>Прогнозируемая ежемесячная прибыль</th>
+                                                    <td class="text-end">{{ monthly_profit|number_format }} руб.</td>
+                                                </tr>
+                                                <tr class="table-primary">
+                                                    <th>Расчетный срок окупаемости</th>
+                                                    <td class="text-end fw-bold">{{ months_to_roi }} месяцев</td>
+                                                </tr>
+                                                <tr>
+                                                    <th>Прогнозируемая годовая доходность (ROI)</th>
+                                                    <td class="text-end">{{ ((monthly_profit * 12 / total_investment) * 100)|round|int }}%</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="card h-100">
+                                    <div class="card-header bg-info text-white">
+                                        <h5 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Факторы, влияющие на окупаемость</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <ul class="factors-list">
+                                            <li>
+                                                <strong>Расположение</strong>
+                                                <p>Выбор правильного местоположения может сократить срок окупаемости на 20-30%</p>
+                                            </li>
+                                            <li>
+                                                <strong>Маркетинговая стратегия</strong>
+                                                <p>Эффективная маркетинговая стратегия обеспечивает более быстрый рост клиентской базы</p>
+                                            </li>
+                                            <li>
+                                                <strong>Сезонность</strong>
+                                                <p>Учитывайте сезонные колебания спроса при планировании денежных потоков</p>
+                                            </li>
+                                            <li>
+                                                <strong>Конкурентная среда</strong>
+                                                <p>Анализ конкурентов поможет выбрать правильное позиционирование на рынке</p>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-warning mt-3">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>Примечание:</strong> Расчет основан на среднерыночных показателях и может отличаться в зависимости от региона и текущей экономической ситуации. Рекомендуется провести дополнительный анализ с учетом специфики вашего бизнеса.
                         </div>
                     </div>
                     

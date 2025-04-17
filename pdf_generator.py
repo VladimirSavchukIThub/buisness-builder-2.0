@@ -430,6 +430,120 @@ class PDFGenerator:
             
             elements.append(Spacer(1, 0.5*cm))
             
+            # Прогнозирование окупаемости инвестиций
+            elements.append(Paragraph("Прогноз окупаемости инвестиций", self.styles['Heading2Custom']))
+            elements.append(Spacer(1, 0.3*cm))
+            
+            # Рассчитываем показатели окупаемости
+            total_investment = result_data['price']
+            monthly_revenue = round(total_investment * 0.15)  # Примерно 15% от инвестиций
+            monthly_expenses = round(monthly_revenue * 0.7)   # Примерно 70% от выручки
+            monthly_profit = monthly_revenue - monthly_expenses
+            months_to_roi = round(total_investment / monthly_profit) if monthly_profit > 0 else "N/A"
+            annual_roi = round((monthly_profit * 12 / total_investment) * 100) if monthly_profit > 0 else "N/A"
+            
+            # Создаем таблицу с показателями
+            roi_data = [
+                ["Показатель", "Значение"],
+                ["Общие инвестиции", f"{self._format_number(total_investment)} руб."],
+                ["Прогнозируемый ежемесячный доход", f"{self._format_number(monthly_revenue)} руб."],
+                ["Прогнозируемые ежемесячные расходы", f"{self._format_number(monthly_expenses)} руб."],
+                ["Прогнозируемая ежемесячная прибыль", f"{self._format_number(monthly_profit)} руб."],
+                ["Расчетный срок окупаемости", f"{months_to_roi} месяцев"],
+                ["Прогнозируемая годовая доходность (ROI)", f"{annual_roi}%"]
+            ]
+            
+            roi_table = Table(roi_data, colWidths=[doc.width*0.6, doc.width*0.4])
+            roi_table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (1, 0), colors.grey),
+                ('TEXTCOLOR', (0, 0), (1, 0), colors.whitesmoke),
+                ('ALIGN', (0, 0), (1, 0), 'CENTER'),
+                ('FONTNAME', (0, 0), (1, 0), 'Arial-Bold'),
+                ('FONTSIZE', (0, 0), (1, 0), 12),
+                ('BOTTOMPADDING', (0, 0), (1, 0), 6),
+                ('ALIGN', (1, 1), (1, -1), 'RIGHT'),
+                ('GRID', (0, 0), (-1, -1), 1, colors.black),
+                ('BOX', (0, 0), (-1, -1), 1, colors.black),
+                ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                ('BACKGROUND', (0, 4), (-1, 4), colors.lightblue),  # Выделяем строку окупаемости
+                ('FONTNAME', (0, 4), (1, 4), 'Arial-Bold'),
+            ]))
+            elements.append(roi_table)
+            elements.append(Spacer(1, 0.5*cm))
+            
+            # Создаем график окупаемости (линейная диаграмма)
+            try:
+                # Создаем данные для графика окупаемости
+                months = list(range(1, months_to_roi + 7)) if isinstance(months_to_roi, int) else list(range(1, 19))
+                cumulative_profit = [monthly_profit * month - total_investment for month in months]
+                
+                # Сбрасываем настройки графика
+                plt.rcdefaults()
+                plt.figure(figsize=(8, 5), dpi=100)
+                
+                # Строим график
+                plt.plot(months, cumulative_profit, marker='o', linestyle='-', color='blue', linewidth=2)
+                plt.axhline(y=0, color='r', linestyle='--')  # Линия нулевой прибыли (точка окупаемости)
+                
+                # Настраиваем оси и подписи
+                plt.title('Прогноз окупаемости инвестиций', fontsize=12)
+                plt.xlabel('Месяцы', fontsize=10)
+                plt.ylabel('Прибыль/Убыток (руб.)', fontsize=10)
+                plt.grid(True, linestyle='--', alpha=0.7)
+                
+                # Добавляем подпись точки окупаемости, если она есть
+                if isinstance(months_to_roi, int):
+                    plt.annotate(f'Точка окупаемости\n({months_to_roi} месяцев)',
+                                xy=(months_to_roi, 0), xytext=(months_to_roi+1, monthly_profit*2),
+                                arrowprops=dict(arrowstyle="->", connectionstyle="arc3", color='green'),
+                                bbox=dict(boxstyle="round,pad=0.3", fc="white", ec="green", alpha=0.8))
+                
+                # Форматируем значения осей
+                plt.gca().get_yaxis().set_major_formatter(
+                    matplotlib.ticker.FuncFormatter(lambda x, p: format(int(x), ',').replace(',', ' '))
+                )
+                
+                plt.tight_layout()
+                
+                # Сохраняем график во временный буфер
+                roi_chart_buffer = io.BytesIO()
+                plt.savefig(roi_chart_buffer, format='png', bbox_inches='tight')
+                roi_chart_buffer.seek(0)
+                plt.close()
+                
+                # Добавляем график в PDF
+                roi_chart_img = Image(roi_chart_buffer, width=450, height=250)
+                elements.append(roi_chart_img)
+                elements.append(Spacer(1, 0.5*cm))
+                print("График окупаемости создан успешно")
+            except Exception as e:
+                print(f"Ошибка при создании графика окупаемости: {e}")
+                elements.append(Paragraph("Не удалось сгенерировать график окупаемости", self.styles['BodyTextCustom']))
+                elements.append(Spacer(1, 0.5*cm))
+            
+            # Добавляем предупреждение
+            elements.append(Paragraph("Важное примечание:", self.styles['BodyTextCustom']))
+            elements.append(Paragraph(
+                "Представленный прогноз окупаемости основан на среднерыночных показателях и предназначен для предварительной оценки. "
+                "Фактический срок окупаемости может существенно отличаться в зависимости от множества факторов, включая:",
+                self.styles['BodyTextCustom']
+            ))
+            
+            # Список факторов, влияющих на окупаемость
+            factors = [
+                "Расположение бизнеса и проходимость",
+                "Эффективность маркетинговых мероприятий",
+                "Сезонность и колебания спроса",
+                "Конкурентная ситуация на рынке",
+                "Экономическая ситуация в регионе"
+            ]
+            
+            for factor in factors:
+                elements.append(Paragraph(f"• {factor}", self.styles['BodyTextCustom']))
+            
+            elements.append(Spacer(1, 0.5*cm))
+            
             # Рекомендации
             elements.append(Paragraph("Рекомендации", self.styles['Heading2Custom']))
             
