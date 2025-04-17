@@ -1,0 +1,91 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Просмотр сообщения{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-4">
+    <div class="row mb-4">
+        <div class="col-12 d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="h3 mb-0 text-gray-800">Просмотр сообщения</h1>
+                <p class="text-muted">Детальная информация о сообщении</p>
+            </div>
+            <div>
+                <a href="{{ url_for('admin_messages') }}" class="btn btn-primary">
+                    <i class="fas fa-arrow-left mr-1"></i> Назад к списку
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Детали сообщения</h6>
+                    <form action="{{ url_for('admin_message_delete', message_id=message.id) }}" method="POST" class="d-inline">
+                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Вы уверены, что хотите удалить это сообщение?');">
+                            <i class="fas fa-trash"></i> Удалить
+                        </button>
+                    </form>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <p><strong>Имя отправителя:</strong> {{ message.name|default('Не указано') }}</p>
+                            <p><strong>Email:</strong> {{ message.email|default('Не указано') }}</p>
+                            <p><strong>Тема:</strong> {{ message.subject|default('Не указано') }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Дата отправки:</strong> {{ message.created_at|default('Не указано') }}</p>
+                            <p><strong>Статус:</strong> 
+                                {% if message.is_read %}
+                                <span class="badge bg-success">Прочитано</span>
+                                {% else %}
+                                <span class="badge bg-warning">Новое</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col-12">
+                            <h6 class="font-weight-bold">Содержание сообщения:</h6>
+                            <div class="p-3 bg-light rounded">
+                                {{ message.content|default('Содержание отсутствует')|nl2br }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {% if message.email %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Ответ на сообщение</h6>
+                </div>
+                <div class="card-body">
+                    <form action="#" method="POST">
+                        <div class="mb-3">
+                            <label for="subject" class="form-label">Тема</label>
+                            <input type="text" class="form-control" id="subject" name="subject" value="Re: {{ message.subject }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="content" class="form-label">Текст сообщения</label>
+                            <textarea class="form-control" id="content" name="content" rows="5" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane"></i> Отправить ответ
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %} 

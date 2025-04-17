@@ -8,12 +8,22 @@ import urllib.parse
 import json
 from bank_api import get_business_loan_rates, calculate_business_loan, BankAPI
 from chatbot import ChatBot  # Импортируем наш класс чат-бота
+import jinja2
+from markupsafe import Markup
+
+# Импортируем модули для админ-панели
+from admin_auth import verify_password, login_admin, logout_admin, is_admin_logged_in, admin_required
+from data_manager import DataManager
+from file_handler import save_file, delete_file
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)  # для работы с сессиями и flash-сообщениями
 
 # Инициализация чат-бота
 chatbot = ChatBot()
+
+# Инициализация менеджера данных
+data_manager = DataManager()
 
 # Пытаемся установить русскую локаль для Windows
 try:
@@ -38,6 +48,14 @@ def number_format_filter(value):
             return f"{int(value):,}".replace(',', ' ')
         return value
 
+# Регистрируем фильтр nl2br для преобразования переносов строк в HTML теги <br>
+@app.template_filter('nl2br')
+def nl2br_filter(s):
+    if s is None:
+        return ''
+    s = str(s).replace('\r\n', '\n').replace('\r', '\n')
+    return Markup(s.replace('\n', '<br>'))
+
 # Главная страница
 @app.route('/')
 def index():
@@ -57,9 +75,37 @@ def about():
     return render_template('about.html')
 
 # Страница с контактной информацией
-@app.route('/contact')
+@app.route('/contact', methods=['GET', 'POST'])
 def contact():
-    return render_template('contact.html')
+    success_message = None
+    
+    if request.method == 'POST':
+        # Получаем данные из формы
+        name = request.form.get('name')
+        email = request.form.get('email')
+        subject = request.form.get('subject')
+        content = request.form.get('content')
+        privacy = request.form.get('privacy')
+        
+        # Проверяем наличие всех необходимых данных
+        if not all([name, email, subject, content, privacy]):
+            flash('Пожалуйста, заполните все обязательные поля формы', 'danger')
+            return render_template('contact.html')
+        
+        try:
+            # Сохраняем сообщение в базе данных
+            data_manager.add_message(name, email, subject, content)
+            
+            # Устанавливаем флаг успешной отправки
+            success_message = True
+            
+            # Выводим сообщение об успешной отправке
+            flash('Ваше сообщение успешно отправлено! Мы свяжемся с вами в ближайшее время.', 'success')
+        except Exception as e:
+            print(f"Ошибка при сохранении сообщения: {e}")
+            flash('Произошла ошибка при отправке сообщения. Пожалуйста, попробуйте позже.', 'danger')
+    
+    return render_template('contact.html', success_message=success_message)
 
 # Страница с примерами успешных бизнес-моделей
 @app.route('/examples')
@@ -69,57 +115,8 @@ def examples():
 # Страница базы знаний
 @app.route('/knowledge-base')
 def knowledge_base():
-    # Mock data for demonstration purposes
-    articles = [
-        {
-            'id': 1,
-            'title': 'Как составить бизнес-план для малого бизнеса',
-            'description': 'Пошаговое руководство по созданию эффективного бизнес-плана для начинающих предпринимателей.',
-            'category': 'Планирование',
-            'image': url_for('static', filename='images/articles/business-plan.jpg'),
-            'date': '15 мая 2023'
-        },
-        {
-            'id': 2,
-            'title': 'Выбор правовой формы для бизнеса в 2023 году',
-            'description': 'Сравнение различных форм организации бизнеса - ИП, ООО, самозанятость и другие. Что выбрать в зависимости от вашей ситуации.',
-            'category': 'Юридические вопросы',
-            'image': url_for('static', filename='images/articles/legal-form.jpg'),
-            'date': '2 июня 2023'
-        },
-        {
-            'id': 3,
-            'title': 'Маркетинговые стратегии с минимальным бюджетом',
-            'description': 'Эффективные способы продвижения бизнеса без значительных финансовых вложений.',
-            'category': 'Маркетинг',
-            'image': url_for('static', filename='images/articles/marketing.jpg'),
-            'date': '18 июня 2023'
-        },
-        {
-            'id': 4,
-            'title': 'Финансовый учет для начинающих предпринимателей',
-            'description': 'Основы ведения финансового учета, которые должен знать каждый владелец бизнеса.',
-            'category': 'Финансы',
-            'image': url_for('static', filename='images/articles/finance.jpg'),
-            'date': '5 июля 2023'
-        },
-        {
-            'id': 5,
-            'title': 'Как привлечь первых клиентов в новый бизнес',
-            'description': 'Проверенные методы привлечения клиентов для только что открывшегося бизнеса.',
-            'category': 'Маркетинг',
-            'image': url_for('static', filename='images/articles/clients.jpg'),
-            'date': '22 июля 2023'
-        },
-        {
-            'id': 6,
-            'title': 'Оптимизация налогообложения для малого бизнеса',
-            'description': 'Законные способы снизить налоговую нагрузку на ваш бизнес.',
-            'category': 'Налоги',
-            'image': url_for('static', filename='images/articles/taxes.jpg'),
-            'date': '10 августа 2023'
-        }
-    ]
+    """Страница базы знаний."""
+    articles = data_manager.get_articles()
     
     # Search functionality
     search_query = request.args.get('search', '')
@@ -143,154 +140,21 @@ def knowledge_base():
                           search_query=search_query,
                           category=category_filter)
 
-@app.route('/knowledge-base/article/<int:article_id>')
+@app.route('/knowledge-base/article/<article_id>')
 def article_detail(article_id):
-    # Mock data - in a real application, you would fetch from a database
-    articles = {
-        1: {
-            'id': 1,
-            'title': 'Как составить бизнес-план для малого бизнеса',
-            'category': 'Планирование',
-            'date': '15 мая 2023',
-            'image': url_for('static', filename='images/articles/business-plan.jpg'),
-            'content': """
-                <h2>Введение</h2>
-                <p>Бизнес-план является фундаментом любого успешного бизнеса. Этот документ не только помогает структурировать ваши мысли и идеи, но и служит инструментом для привлечения инвестиций и кредитов.</p>
-                
-                <h2>Что такое бизнес-план?</h2>
-                <p>Бизнес-план — это документ, описывающий все основные аспекты будущего предприятия, анализирующий проблемы, с которыми оно может столкнуться, и определяющий способы решения этих проблем.</p>
-                
-                <h2>Структура бизнес-плана</h2>
-                <p>Стандартный бизнес-план включает следующие разделы:</p>
-                <ul>
-                    <li><strong>Резюме</strong> — краткое описание проекта</li>
-                    <li><strong>Описание компании</strong> — история, цели, миссия</li>
-                    <li><strong>Анализ рынка</strong> — исследование отрасли, конкурентов, целевой аудитории</li>
-                    <li><strong>Продукт или услуга</strong> — подробное описание</li>
-                    <li><strong>Маркетинговый план</strong> — стратегии продвижения и продаж</li>
-                    <li><strong>Операционный план</strong> — организационная структура, процессы</li>
-                    <li><strong>Финансовый план</strong> — прогнозы доходов и расходов, точка безубыточности</li>
-                    <li><strong>Приложения</strong> — дополнительные материалы</li>
-                </ul>
-                
-                <h2>Резюме проекта</h2>
-                <p>Несмотря на то, что резюме является первым разделом бизнес-плана, писать его рекомендуется в последнюю очередь, когда все остальные разделы уже готовы. В резюме должны быть отражены:</p>
-                <ul>
-                    <li>Название компании и вид деятельности</li>
-                    <li>Миссия компании</li>
-                    <li>Уникальное торговое предложение</li>
-                    <li>Цели на ближайшие 1-3-5 лет</li>
-                    <li>Краткая информация о команде</li>
-                    <li>Объем необходимых инвестиций</li>
-                    <li>Прогнозируемые финансовые показатели</li>
-                </ul>
-                
-                <h2>Финансовый план</h2>
-                <p>Этот раздел является одним из наиболее важных, поскольку он показывает, будет ли ваш бизнес прибыльным. Финансовый план должен включать:</p>
-                <ul>
-                    <li>Прогноз доходов и расходов</li>
-                    <li>План движения денежных средств</li>
-                    <li>Прогнозный баланс</li>
-                    <li>Анализ точки безубыточности</li>
-                    <li>Оценка эффективности инвестиций</li>
-                </ul>
-                
-                <h2>Заключение</h2>
-                <p>Бизнес-план — это не просто формальный документ, а инструмент, который поможет вам определить реалистичность вашей бизнес-идеи и спланировать шаги по ее реализации. Тщательно проработанный бизнес-план повышает шансы на успех вашего предприятия и помогает избежать типичных ошибок начинающих предпринимателей.</p>
-            """,
-            'related_articles': [2, 4, 5]
-        },
-        2: {
-            'id': 2,
-            'title': 'Выбор правовой формы для бизнеса в 2023 году',
-            'category': 'Юридические вопросы',
-            'date': '2 июня 2023',
-            'image': url_for('static', filename='images/articles/legal-form.jpg'),
-            'content': """
-                <h2>Введение в правовые формы бизнеса</h2>
-                <p>Выбор правовой формы является одним из первых и наиболее важных решений при открытии бизнеса. Этот выбор влияет на налогообложение, ответственность, возможности привлечения инвестиций и многие другие аспекты деятельности.</p>
-                
-                <h2>Основные формы ведения бизнеса</h2>
-                <p>В России существует несколько основных форм ведения бизнеса:</p>
-                
-                <h3>Индивидуальный предприниматель (ИП)</h3>
-                <p><strong>Преимущества:</strong></p>
-                <ul>
-                    <li>Простая и недорогая регистрация</li>
-                    <li>Упрощенная отчетность</li>
-                    <li>Возможность выбора различных систем налогообложения</li>
-                    <li>Свободное распоряжение денежными средствами</li>
-                </ul>
-                <p><strong>Недостатки:</strong></p>
-                <ul>
-                    <li>Полная ответственность личным имуществом по обязательствам</li>
-                    <li>Ограничения в видах деятельности</li>
-                    <li>Сложности с привлечением инвестиций</li>
-                    <li>Сложности с продажей бизнеса</li>
-                </ul>
-                
-                <h3>Общество с ограниченной ответственностью (ООО)</h3>
-                <p><strong>Преимущества:</strong></p>
-                <ul>
-                    <li>Ограниченная ответственность учредителей (в пределах стоимости долей)</li>
-                    <li>Возможность привлечения инвестиций</li>
-                    <li>Более высокий уровень доверия от контрагентов</li>
-                    <li>Возможность продажи бизнеса</li>
-                </ul>
-                <p><strong>Недостатки:</strong></p>
-                <ul>
-                    <li>Более сложная и дорогая регистрация</li>
-                    <li>Более сложная отчетность</li>
-                    <li>Необходимость формирования уставного капитала</li>
-                    <li>Ограничения в распоряжении средствами компании</li>
-                </ul>
-                
-                <h3>Самозанятость</h3>
-                <p>С 2019 года в России действует специальный налоговый режим для самозанятых граждан — налог на профессиональный доход (НПД).</p>
-                <p><strong>Преимущества:</strong></p>
-                <ul>
-                    <li>Минимальная налоговая ставка (4% при работе с физлицами, 6% при работе с юрлицами)</li>
-                    <li>Отсутствие необходимости подавать декларации</li>
-                    <li>Нет обязательных страховых взносов</li>
-                    <li>Простая регистрация через мобильное приложение</li>
-                </ul>
-                <p><strong>Недостатки:</strong></p>
-                <ul>
-                    <li>Ограничение по видам деятельности</li>
-                    <li>Лимит годового дохода (2,4 млн рублей)</li>
-                    <li>Невозможность нанимать сотрудников</li>
-                    <li>Отсутствие стажа для пенсии (если не платить взносы добровольно)</li>
-                </ul>
-                
-                <h2>Какую форму выбрать?</h2>
-                <p>При выборе оптимальной правовой формы для вашего бизнеса учитывайте следующие факторы:</p>
-                <ul>
-                    <li>Масштаб планируемой деятельности</li>
-                    <li>Количество учредителей</li>
-                    <li>Потребность в привлечении инвестиций</li>
-                    <li>Риски деятельности</li>
-                    <li>Налоговые последствия</li>
-                    <li>Отраслевые особенности</li>
-                </ul>
-                
-                <h2>Заключение</h2>
-                <p>Выбор правовой формы бизнеса — это стратегическое решение, которое должно соответствовать вашим долгосрочным целям. Рекомендуется проконсультироваться с юристом или налоговым консультантом перед принятием окончательного решения.</p>
-            """,
-            'related_articles': [1, 6]
-        },
-        # Additional articles would be defined similarly
-    }
-    
-    article = articles.get(article_id)
+    """Страница отдельной статьи."""
+    article = data_manager.get_article(article_id)
     if not article:
         abort(404)
         
-    # Get related articles
+    # Get related articles (for demo just get 2 random articles)
+    articles = data_manager.get_articles()
     related_articles = []
-    if 'related_articles' in article:
-        for rel_id in article['related_articles']:
-            if rel_id in articles:
-                related_articles.append(articles[rel_id])
+    for a in articles:
+        if a['id'] != article_id:
+            related_articles.append(a)
+            if len(related_articles) >= 2:
+                break
     
     return render_template('article_detail.html', article=article, related_articles=related_articles)
 
@@ -514,6 +378,446 @@ def chat_api():
         print(f"Ошибка в работе чат-бота: {e}")
         print(traceback.format_exc())
         return jsonify({'error': 'Внутренняя ошибка сервера'}), 500
+
+# Маршруты для админ-панели
+
+@app.route('/admin/login', methods=['GET', 'POST'])
+def admin_login():
+    """Страница входа в админ-панель."""
+    # Если администратор уже авторизован, перенаправляем на дашборд
+    if is_admin_logged_in():
+        return redirect(url_for('admin_dashboard'))
+    
+    error = None
+    
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        
+        if verify_password(username, password):
+            login_admin(username)
+            flash('Вы успешно вошли в систему', 'success')
+            return redirect(url_for('admin_dashboard'))
+        else:
+            error = 'Неверное имя пользователя или пароль'
+    
+    return render_template('admin/login.html', error=error)
+
+@app.route('/admin/logout')
+def admin_logout():
+    """Выход из админ-панели."""
+    logout_admin()
+    flash('Вы вышли из системы', 'info')
+    return redirect(url_for('admin_login'))
+
+@app.route('/admin')
+@admin_required
+def admin_dashboard():
+    """Главная страница админ-панели."""
+    # Получаем данные для статистики
+    messages = data_manager.get_messages()
+    articles = data_manager.get_articles()
+    
+    # Генерируем тестовые данные для статистики
+    stats = {
+        'users_count': 124,
+        'articles_count': len(articles),
+        'plans_count': 346,
+        'messages_count': len(messages),
+        
+        # Данные для графика планов за 30 дней
+        'days_labels': [f"{i+1}" for i in range(30)],
+        'plans_by_day': [3, 5, 2, 4, 6, 5, 8, 7, 9, 12, 10, 8, 7, 11, 13, 9, 8, 10, 12, 14, 11, 9, 8, 7, 9, 11, 13, 10, 8, 12],
+        
+        # Данные для графика типов бизнеса
+        'top_business_types': [
+            {'name': 'Интернет-магазин', 'count': 142},
+            {'name': 'Кафе', 'count': 89},
+            {'name': 'Салон красоты', 'count': 64},
+            {'name': 'Строительство', 'count': 47},
+            {'name': 'Другое', 'count': 4}
+        ],
+        'top_business_types_names': ['Интернет-магазин', 'Кафе', 'Салон красоты', 'Строительство', 'Другое'],
+        'top_business_types_counts': [142, 89, 64, 47, 4],
+        'chart_colors': ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b']
+    }
+    
+    # Получаем последние статьи
+    recent_articles = articles[:5]
+    
+    # Получаем последние сообщения
+    recent_messages = messages[:5]
+    
+    return render_template('admin/dashboard.html', stats=stats, recent_articles=recent_articles, recent_messages=recent_messages)
+
+# Маршруты для управления типами бизнеса
+
+@app.route('/admin/business-types')
+@admin_required
+def admin_business_types():
+    """Список типов бизнеса."""
+    business_types = data_manager.get_business_types()
+    return render_template('admin/business_types/index.html', business_types=business_types)
+
+@app.route('/admin/business-types/create', methods=['GET', 'POST'])
+@admin_required
+def admin_business_type_create():
+    """Создание нового типа бизнеса."""
+    if request.method == 'POST':
+        name = request.form.get('name')
+        base_price = int(request.form.get('base_price', 0))
+        description = request.form.get('description', '')
+        
+        if not name:
+            flash('Имя типа бизнеса не может быть пустым', 'danger')
+            return render_template('admin/business_types/create.html')
+        
+        data_manager.add_business_type(name, base_price, description)
+        flash('Тип бизнеса успешно создан', 'success')
+        return redirect(url_for('admin_business_types'))
+    
+    return render_template('admin/business_types/create.html')
+
+@app.route('/admin/business-types/edit/<type_id>', methods=['GET', 'POST'])
+@admin_required
+def admin_business_type_edit(type_id):
+    """Редактирование типа бизнеса."""
+    business_type = data_manager.get_business_type(type_id)
+    if not business_type:
+        flash('Тип бизнеса не найден', 'danger')
+        return redirect(url_for('admin_business_types'))
+    
+    if request.method == 'POST':
+        name = request.form.get('name')
+        base_price = int(request.form.get('base_price', 0))
+        description = request.form.get('description', '')
+        
+        if not name:
+            flash('Имя типа бизнеса не может быть пустым', 'danger')
+            return render_template('admin/business_types/edit.html', business_type=business_type)
+        
+        data_manager.update_business_type(type_id, name, base_price, description)
+        flash('Тип бизнеса успешно обновлен', 'success')
+        return redirect(url_for('admin_business_types'))
+    
+    return render_template('admin/business_types/edit.html', business_type=business_type)
+
+@app.route('/admin/business-types/delete/<type_id>', methods=['POST'])
+@admin_required
+def admin_business_type_delete(type_id):
+    """Удаление типа бизнеса."""
+    business_type = data_manager.get_business_type(type_id)
+    if not business_type:
+        flash('Тип бизнеса не найден', 'danger')
+    else:
+        data_manager.delete_business_type(type_id)
+        flash('Тип бизнеса успешно удален', 'success')
+    
+    return redirect(url_for('admin_business_types'))
+
+# Маршруты для управления дополнительными услугами (функциями)
+
+@app.route('/admin/features')
+@admin_required
+def admin_features():
+    """Список дополнительных услуг."""
+    features = data_manager.get_features()
+    return render_template('admin/features/index.html', features=features)
+
+@app.route('/admin/features/create', methods=['GET', 'POST'])
+@admin_required
+def admin_feature_create():
+    """Создание новой дополнительной услуги."""
+    if request.method == 'POST':
+        name = request.form.get('name')
+        price = int(request.form.get('price', 0))
+        description = request.form.get('description', '')
+        
+        if not name:
+            flash('Название услуги не может быть пустым', 'danger')
+            return render_template('admin/features/create.html')
+        
+        data_manager.add_feature(name, price, description)
+        flash('Дополнительная услуга успешно создана', 'success')
+        return redirect(url_for('admin_features'))
+    
+    return render_template('admin/features/create.html')
+
+@app.route('/admin/features/edit/<feature_id>', methods=['GET', 'POST'])
+@admin_required
+def admin_feature_edit(feature_id):
+    """Редактирование дополнительной услуги."""
+    feature = data_manager.get_feature(feature_id)
+    if not feature:
+        flash('Дополнительная услуга не найдена', 'danger')
+        return redirect(url_for('admin_features'))
+    
+    if request.method == 'POST':
+        name = request.form.get('name')
+        price = int(request.form.get('price', 0))
+        description = request.form.get('description', '')
+        
+        if not name:
+            flash('Название услуги не может быть пустым', 'danger')
+            return render_template('admin/features/edit.html', feature=feature)
+        
+        data_manager.update_feature(feature_id, name, price, description)
+        flash('Дополнительная услуга успешно обновлена', 'success')
+        return redirect(url_for('admin_features'))
+    
+    return render_template('admin/features/edit.html', feature=feature)
+
+@app.route('/admin/features/delete/<feature_id>', methods=['POST'])
+@admin_required
+def admin_feature_delete(feature_id):
+    """Удаление дополнительной услуги."""
+    feature = data_manager.get_feature(feature_id)
+    if not feature:
+        flash('Дополнительная услуга не найдена', 'danger')
+    else:
+        data_manager.delete_feature(feature_id)
+        flash('Дополнительная услуга успешно удалена', 'success')
+    
+    return redirect(url_for('admin_features'))
+
+# Маршруты для управления примерами успешных бизнес-проектов
+
+@app.route('/admin/examples')
+@admin_required
+def admin_examples():
+    """Список примеров бизнес-проектов."""
+    examples = data_manager.get_examples()
+    return render_template('admin/examples/index.html', examples=examples)
+
+@app.route('/admin/examples/create', methods=['GET', 'POST'])
+@admin_required
+def admin_example_create():
+    """Создание нового примера бизнес-проекта."""
+    if request.method == 'POST':
+        title = request.form.get('title')
+        business_type = request.form.get('business_type')
+        investment = request.form.get('investment')
+        profit = request.form.get('profit')
+        period = request.form.get('period')
+        content = request.form.get('content')
+        
+        # Обработка загрузки изображения
+        image = ''
+        if 'image' in request.files:
+            image_file = request.files['image']
+            if image_file.filename:
+                image = save_file(image_file, 'images/examples')
+        
+        if not title or not business_type:
+            flash('Заполните обязательные поля', 'danger')
+            return render_template('admin/examples/create.html')
+        
+        data_manager.add_example(title, business_type, investment, profit, period, content, image)
+        flash('Пример бизнес-проекта успешно создан', 'success')
+        return redirect(url_for('admin_examples'))
+    
+    return render_template('admin/examples/create.html')
+
+@app.route('/admin/examples/edit/<example_id>', methods=['GET', 'POST'])
+@admin_required
+def admin_example_edit(example_id):
+    """Редактирование примера бизнес-проекта."""
+    example = data_manager.get_example(example_id)
+    if not example:
+        flash('Пример бизнес-проекта не найден', 'danger')
+        return redirect(url_for('admin_examples'))
+    
+    if request.method == 'POST':
+        title = request.form.get('title')
+        business_type = request.form.get('business_type')
+        investment = request.form.get('investment')
+        profit = request.form.get('profit')
+        period = request.form.get('period')
+        content = request.form.get('content')
+        
+        # Обработка изображения
+        image = example.get('image', '')
+        if 'image' in request.files:
+            image_file = request.files['image']
+            if image_file.filename:
+                # Удаляем старое изображение
+                if image:
+                    delete_file(image)
+                # Сохраняем новое изображение
+                image = save_file(image_file, 'images/examples')
+        
+        if not title or not business_type:
+            flash('Заполните обязательные поля', 'danger')
+            return render_template('admin/examples/edit.html', example=example)
+        
+        data_manager.update_example(example_id, title, business_type, investment, profit, period, content, image)
+        flash('Пример бизнес-проекта успешно обновлен', 'success')
+        return redirect(url_for('admin_examples'))
+    
+    return render_template('admin/examples/edit.html', example=example)
+
+@app.route('/admin/examples/delete/<example_id>', methods=['POST'])
+@admin_required
+def admin_example_delete(example_id):
+    """Удаление примера бизнес-проекта."""
+    example = data_manager.get_example(example_id)
+    if not example:
+        flash('Пример бизнес-проекта не найден', 'danger')
+    else:
+        # Удаляем связанное изображение
+        if example.get('image'):
+            delete_file(example['image'])
+        
+        data_manager.delete_example(example_id)
+        flash('Пример бизнес-проекта успешно удален', 'success')
+    
+    return redirect(url_for('admin_examples'))
+
+# Маршруты для управления статьями базы знаний
+
+@app.route('/admin/articles')
+@admin_required
+def admin_articles():
+    """Список статей базы знаний."""
+    articles = data_manager.get_articles()
+    return render_template('admin/articles/index.html', articles=articles)
+
+@app.route('/admin/articles/create', methods=['GET', 'POST'])
+@admin_required
+def admin_article_create():
+    """Создание новой статьи."""
+    if request.method == 'POST':
+        title = request.form.get('title')
+        category = request.form.get('category')
+        description = request.form.get('description')
+        content = request.form.get('content')
+        
+        # Обработка загрузки изображения
+        image = ''
+        if 'image' in request.files:
+            image_file = request.files['image']
+            if image_file.filename:
+                image = save_file(image_file, 'images/articles')
+        
+        if not title or not category or not description:
+            flash('Заполните обязательные поля', 'danger')
+            return render_template('admin/articles/create.html')
+        
+        data_manager.add_article(title, category, description, content, image)
+        flash('Статья успешно создана', 'success')
+        return redirect(url_for('admin_articles'))
+    
+    return render_template('admin/articles/create.html')
+
+@app.route('/admin/articles/edit/<article_id>', methods=['GET', 'POST'])
+@admin_required
+def admin_article_edit(article_id):
+    """Редактирование статьи."""
+    article = data_manager.get_article(article_id)
+    if not article:
+        flash('Статья не найдена', 'danger')
+        return redirect(url_for('admin_articles'))
+    
+    if request.method == 'POST':
+        title = request.form.get('title')
+        category = request.form.get('category')
+        description = request.form.get('description')
+        content = request.form.get('content')
+        
+        # Обработка изображения
+        image = article.get('image', '')
+        if 'image' in request.files:
+            image_file = request.files['image']
+            if image_file.filename:
+                # Удаляем старое изображение
+                if image:
+                    delete_file(image)
+                # Сохраняем новое изображение
+                image = save_file(image_file, 'images/articles')
+        
+        if not title or not category or not description:
+            flash('Заполните обязательные поля', 'danger')
+            return render_template('admin/articles/edit.html', article=article)
+        
+        data_manager.update_article(article_id, title, category, description, content, image)
+        flash('Статья успешно обновлена', 'success')
+        return redirect(url_for('admin_articles'))
+    
+    return render_template('admin/articles/edit.html', article=article)
+
+@app.route('/admin/articles/delete/<article_id>', methods=['POST'])
+@admin_required
+def admin_article_delete(article_id):
+    """Удаление статьи."""
+    article = data_manager.get_article(article_id)
+    if not article:
+        flash('Статья не найдена', 'danger')
+    else:
+        # Удаляем связанное изображение
+        if article.get('image'):
+            delete_file(article['image'])
+        
+        data_manager.delete_article(article_id)
+        flash('Статья успешно удалена', 'success')
+    
+    return redirect(url_for('admin_articles'))
+
+# Маршруты для управления сообщениями от пользователей
+
+@app.route('/admin/messages')
+@admin_required
+def admin_messages():
+    """Список сообщений от пользователей."""
+    messages = data_manager.get_messages()
+    # Сортируем сообщения: сначала непрочитанные, затем по дате (новые в начале)
+    messages.sort(key=lambda x: (x.get('is_read', False), x.get('created_at', '')), reverse=True)
+    return render_template('admin/messages/index.html', messages=messages)
+
+@app.route('/admin/messages/<message_id>')
+@admin_required
+def admin_message_view(message_id):
+    """Просмотр сообщения от пользователя."""
+    message = data_manager.get_message(message_id)
+    
+    if not message:
+        flash('Сообщение не найдено', 'danger')
+        return redirect(url_for('admin_messages'))
+    
+    # Отмечаем сообщение как прочитанное, если оно не прочитано
+    if not message.get('is_read'):
+        data_manager.mark_message_as_read(message_id)
+    
+    return render_template('admin/messages/view.html', message=message)
+
+@app.route('/admin/messages/delete/<message_id>', methods=['POST'])
+@admin_required
+def admin_message_delete(message_id):
+    """Удаление сообщения."""
+    message = data_manager.get_message(message_id)
+    if not message:
+        flash('Сообщение не найдено', 'danger')
+    else:
+        data_manager.delete_message(message_id)
+        flash('Сообщение успешно удалено', 'success')
+    
+    return redirect(url_for('admin_messages'))
+
+# Маршруты для управления пользователями
+
+@app.route('/admin/users')
+@admin_required
+def admin_users():
+    """Список пользователей."""
+    users = []  # В реальном приложении: получаем из базы данных
+    return render_template('admin/users/index.html', users=users)
+
+# Маршрут для настроек
+
+@app.route('/admin/settings')
+@admin_required
+def admin_settings():
+    """Настройки приложения."""
+    return render_template('admin/settings.html')
 
 if __name__ == '__main__':
     app.run(debug=True) 

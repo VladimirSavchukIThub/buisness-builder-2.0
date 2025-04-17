@@ -20,37 +20,48 @@
                             <h2 class="mb-4"><i class="fas fa-envelope me-2"></i>Напишите нам</h2>
                             <p class="mb-4">Заполните форму ниже, и наш специалист свяжется с вами в течение 24 часов.</p>
                             
-                            <form id="contactForm">
+                            {% with messages = get_flashed_messages(with_categories=true) %}
+                            {% if messages %}
+                                {% for category, message in messages %}
+                                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Закрыть"></button>
+                                </div>
+                                {% endfor %}
+                            {% endif %}
+                            {% endwith %}
+                            
+                            <form id="contactForm" method="POST" action="{{ url_for('contact') }}">
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
                                         <label for="name" class="form-label">Ваше имя</label>
-                                        <input type="text" class="form-control" id="name" placeholder="Введите ваше имя" required>
+                                        <input type="text" class="form-control" id="name" name="name" placeholder="Введите ваше имя" required>
                                     </div>
                                     <div class="col-md-6 mb-3">
                                         <label for="email" class="form-label">Email</label>
-                                        <input type="email" class="form-control" id="email" placeholder="your@email.com" required>
+                                        <input type="email" class="form-control" id="email" name="email" placeholder="your@email.com" required>
                                     </div>
                                 </div>
                                 
                                 <div class="mb-3">
                                     <label for="subject" class="form-label">Тема</label>
-                                    <select class="form-select" id="subject" required>
+                                    <select class="form-select" id="subject" name="subject" required>
                                         <option value="" selected disabled>Выберите тему обращения</option>
-                                        <option value="consultation">Консультация по бизнесу</option>
-                                        <option value="partnership">Предложение о сотрудничестве</option>
-                                        <option value="support">Техническая поддержка</option>
-                                        <option value="feedback">Отзыв о сервисе</option>
-                                        <option value="other">Другое</option>
+                                        <option value="Консультация по бизнесу">Консультация по бизнесу</option>
+                                        <option value="Предложение о сотрудничестве">Предложение о сотрудничестве</option>
+                                        <option value="Техническая поддержка">Техническая поддержка</option>
+                                        <option value="Отзыв о сервисе">Отзыв о сервисе</option>
+                                        <option value="Другое">Другое</option>
                                     </select>
                                 </div>
                                 
                                 <div class="mb-3">
                                     <label for="message" class="form-label">Сообщение</label>
-                                    <textarea class="form-control" id="message" rows="5" placeholder="Напишите ваше сообщение здесь..." required></textarea>
+                                    <textarea class="form-control" id="message" name="content" rows="5" placeholder="Напишите ваше сообщение здесь..." required></textarea>
                                 </div>
                                 
                                 <div class="mb-3 form-check">
-                                    <input type="checkbox" class="form-check-input" id="privacy" required>
+                                    <input type="checkbox" class="form-check-input" id="privacy" name="privacy" required>
                                     <label class="form-check-label" for="privacy">Я согласен на обработку персональных данных</label>
                                 </div>
                                 
@@ -155,44 +166,42 @@
 {% endblock %}
 
 {% block scripts %}
+{% if success_message %}
 <script>
-    // Обработчик отправки формы
-    document.getElementById('contactForm').addEventListener('submit', function(e) {
-        e.preventDefault();
+    // Если сообщение успешно отправлено, выводим сообщение
+    window.addEventListener('DOMContentLoaded', function() {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = 'alert alert-success alert-dismissible fade show mt-3';
+        alertDiv.role = 'alert';
+        alertDiv.innerHTML = `
+            <strong>Спасибо за обращение!</strong> Ваше сообщение успешно отправлено. Мы свяжемся с вами в ближайшее время.
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Закрыть"></button>
+        `;
         
-        // Имитация отправки данных
+        // Добавляем уведомление на страницу и скроллим к нему
+        document.getElementById('contactForm').appendChild(alertDiv);
+        alertDiv.scrollIntoView({behavior: "smooth"});
+        
+        // Автоматически скрываем уведомление через 5 секунд
+        setTimeout(function() {
+            const alert = new bootstrap.Alert(alertDiv);
+            alert.close();
+        }, 5000);
+    });
+</script>
+{% else %}
+<script>
+    // Если форма отправляется с клиента (без перезагрузки страницы)
+    document.getElementById('contactForm').addEventListener('submit', function(e) {
+        // Форма будет отправлена стандартно через POST
+        // Этот код выполняется только перед отправкой
         const submitBtn = this.querySelector('button[type="submit"]');
         const originalText = submitBtn.innerHTML;
         
-        // Изменяем текст кнопки на время "отправки"
+        // Изменяем текст кнопки на время отправки
         submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Отправка...';
         submitBtn.disabled = true;
-        
-        // Имитируем задержку отправки
-        setTimeout(function() {
-            // Создаем уведомление об успешной отправке
-            const alertDiv = document.createElement('div');
-            alertDiv.className = 'alert alert-success alert-dismissible fade show mt-3';
-            alertDiv.role = 'alert';
-            alertDiv.innerHTML = `
-                <strong>Спасибо за обращение!</strong> Ваше сообщение успешно отправлено. Мы свяжемся с вами в ближайшее время.
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Закрыть"></button>
-            `;
-            
-            // Добавляем уведомление на страницу
-            document.getElementById('contactForm').appendChild(alertDiv);
-            
-            // Сбрасываем форму и восстанавливаем кнопку
-            document.getElementById('contactForm').reset();
-            submitBtn.innerHTML = originalText;
-            submitBtn.disabled = false;
-            
-            // Автоматически скрываем уведомление через 5 секунд
-            setTimeout(function() {
-                const alert = new bootstrap.Alert(alertDiv);
-                alert.close();
-            }, 5000);
-        }, 1500);
     });
 </script>
+{% endif %}
 {% endblock %} 

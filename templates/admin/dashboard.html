@@ -1,0 +1,293 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Обзор{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-4">
+    <div class="row">
+        <div class="col-12 mb-4">
+            <h1 class="h3 mb-0 text-gray-800">Обзор системы</h1>
+            <p class="text-muted">Основные показатели и статистика</p>
+        </div>
+    </div>
+
+    <!-- Статистика -->
+    <div class="row">
+        <!-- Статистика пользователей -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Пользователи
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.users_count }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-users fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Статистика статей -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Статьи
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.articles_count }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-newspaper fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Статистика бизнес-планов -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Бизнес-планы
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.plans_count }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-file-invoice-dollar fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Сообщения от пользователей -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Сообщения
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.messages_count }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-envelope fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Содержимое -->
+    <div class="row">
+        <!-- Графики -->
+        <div class="col-xl-8 col-lg-7">
+            <div class="card mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Создание бизнес-планов (последние 30 дней)</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-area">
+                        <canvas id="businessPlansChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Топ бизнес-типов -->
+        <div class="col-xl-4 col-lg-5">
+            <div class="card mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Популярные типы бизнеса</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-pie pt-4 pb-2">
+                        <canvas id="businessTypesChart"></canvas>
+                    </div>
+                    <div class="mt-4 text-center small">
+                        {% for type in stats.top_business_types %}
+                        <span class="mr-2">
+                            <i class="fas fa-circle" style="color: {{ stats.chart_colors[loop.index0] }};"></i> {{ type.name }}
+                        </span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Таблицы -->
+    <div class="row">
+        <!-- Недавние статьи -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Последние статьи</h6>
+                    <a href="{{ url_for('admin_articles') }}" class="btn btn-sm btn-primary">Все статьи</a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Название</th>
+                                    <th>Категория</th>
+                                    <th>Дата</th>
+                                    <th>Действия</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for article in recent_articles %}
+                                <tr>
+                                    <td>{{ article.title }}</td>
+                                    <td>{{ article.category }}</td>
+                                    <td>{{ article.date }}</td>
+                                    <td>
+                                        <a href="{{ url_for('admin_article_edit', article_id=article.id) }}" class="btn btn-sm btn-info">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Недавние сообщения -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Последние сообщения</h6>
+                    <a href="{{ url_for('admin_messages') }}" class="btn btn-sm btn-primary">Все сообщения</a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Имя</th>
+                                    <th>Email</th>
+                                    <th>Тема</th>
+                                    <th>Дата</th>
+                                    <th>Статус</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for message in recent_messages %}
+                                <tr>
+                                    <td>{{ message.name }}</td>
+                                    <td>{{ message.email }}</td>
+                                    <td>{{ message.subject }}</td>
+                                    <td>{{ message.created_at }}</td>
+                                    <td>
+                                        {% if message.is_read %}
+                                        <span class="badge bg-success">Прочитано</span>
+                                        {% else %}
+                                        <span class="badge bg-warning">Новое</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+
+<script>
+    // График создания бизнес-планов
+    const plansCtx = document.getElementById('businessPlansChart').getContext('2d');
+    const plansChart = new Chart(plansCtx, {
+        type: 'line',
+        data: {
+            labels: {{ stats.days_labels|tojson }},
+            datasets: [{
+                label: 'Количество бизнес-планов',
+                data: {{ stats.plans_by_day|tojson }},
+                backgroundColor: 'rgba(78, 115, 223, 0.05)',
+                borderColor: 'rgba(78, 115, 223, 1)',
+                borderWidth: 2,
+                pointBackgroundColor: 'rgba(78, 115, 223, 1)',
+                pointBorderColor: '#fff',
+                pointHoverRadius: 3,
+                pointHoverBackgroundColor: 'rgba(78, 115, 223, 1)',
+                pointHoverBorderColor: 'rgba(78, 115, 223, 1)',
+                pointHitRadius: 10,
+                pointBorderWidth: 2,
+                tension: 0.3
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                x: {
+                    grid: {
+                        display: false,
+                        drawBorder: false
+                    }
+                },
+                y: {
+                    ticks: {
+                        beginAtZero: true,
+                        precision: 0
+                    }
+                }
+            }
+        }
+    });
+
+    // График популярности типов бизнеса
+    const typesCtx = document.getElementById('businessTypesChart').getContext('2d');
+    const typesChart = new Chart(typesCtx, {
+        type: 'doughnut',
+        data: {
+            labels: {{ stats.top_business_types_names|tojson }},
+            datasets: [{
+                data: {{ stats.top_business_types_counts|tojson }},
+                backgroundColor: {{ stats.chart_colors|tojson }},
+                hoverBackgroundColor: {{ stats.chart_colors|tojson }},
+                hoverBorderColor: "rgba(234, 236, 244, 1)"
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            cutout: '70%'
+        }
+    });
+</script>
+{% endblock %} 
