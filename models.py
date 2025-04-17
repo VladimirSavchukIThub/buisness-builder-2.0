@@ -76,6 +76,8 @@ class Message(db.Model):
     subject = db.Column(db.String(255), nullable=False)
     content = db.Column(db.Text, nullable=False)
     is_read = db.Column(db.Boolean, default=False)
+    response = db.Column(db.Text, nullable=True)  # Текст ответа
+    response_sent_at = db.Column(db.DateTime, nullable=True)  # Дата отправки ответа
     created_at = db.Column(db.DateTime, default=datetime.now)
     updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
 

@@ -3,89 +3,132 @@
 {% block title %}Просмотр сообщения{% endblock %}
 
 {% block content %}
-<div class="container-fluid p-4">
-    <div class="row mb-4">
-        <div class="col-12 d-flex justify-content-between align-items-center">
+<div class="container-fluid px-4">
+    <h1 class="mt-4">Просмотр сообщения</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a href="{{ url_for('admin_dashboard') }}">Панель управления</a></li>
+        <li class="breadcrumb-item"><a href="{{ url_for('admin_messages') }}">Сообщения</a></li>
+        <li class="breadcrumb-item active">Просмотр</li>
+    </ol>
+    
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
             <div>
-                <h1 class="h3 mb-0 text-gray-800">Просмотр сообщения</h1>
-                <p class="text-muted">Детальная информация о сообщении</p>
+                <i class="fas fa-envelope me-1"></i>
+                Сообщение #{{ message.id }}
             </div>
             <div>
-                <a href="{{ url_for('admin_messages') }}" class="btn btn-primary">
-                    <i class="fas fa-arrow-left mr-1"></i> Назад к списку
+                <a href="{{ url_for('admin_message_reply', message_id=message.id) }}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-reply me-1"></i> Ответить
                 </a>
+                <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                    <i class="fas fa-trash me-1"></i> Удалить
+                </button>
             </div>
         </div>
-    </div>
-
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                    <h6 class="m-0 font-weight-bold text-primary">Детали сообщения</h6>
-                    <form action="{{ url_for('admin_message_delete', message_id=message.id) }}" method="POST" class="d-inline">
-                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Вы уверены, что хотите удалить это сообщение?');">
-                            <i class="fas fa-trash"></i> Удалить
-                        </button>
-                    </form>
-                </div>
-                <div class="card-body">
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <p><strong>Имя отправителя:</strong> {{ message.name|default('Не указано') }}</p>
-                            <p><strong>Email:</strong> {{ message.email|default('Не указано') }}</p>
-                            <p><strong>Тема:</strong> {{ message.subject|default('Не указано') }}</p>
+        <div class="card-body">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                         </div>
-                        <div class="col-md-6">
-                            <p><strong>Дата отправки:</strong> {{ message.created_at|default('Не указано') }}</p>
-                            <p><strong>Статус:</strong> 
-                                {% if message.is_read %}
-                                <span class="badge bg-success">Прочитано</span>
-                                {% else %}
-                                <span class="badge bg-warning">Новое</span>
-                                {% endif %}
-                            </p>
-                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            <div class="row">
+                <div class="col-md-4">
+                    <h5>Информация о сообщении</h5>
+                    <div class="mb-4">
+                        <table class="table table-bordered">
+                            <tr>
+                                <th>ID:</th>
+                                <td>{{ message.id }}</td>
+                            </tr>
+                            <tr>
+                                <th>Статус:</th>
+                                <td>
+                                    {% if message.is_read %}
+                                        <span class="badge bg-success">Прочитано</span>
+                                    {% else %}
+                                        <span class="badge bg-warning">Не прочитано</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>От кого:</th>
+                                <td>{{ message.name }}</td>
+                            </tr>
+                            <tr>
+                                <th>Email:</th>
+                                <td><a href="mailto:{{ message.email }}">{{ message.email }}</a></td>
+                            </tr>
+                            <tr>
+                                <th>Дата:</th>
+                                <td>{{ message.created_at.strftime('%d.%m.%Y %H:%M') }}</td>
+                            </tr>
+                            {% if message.response_sent_at %}
+                            <tr>
+                                <th>Ответ отправлен:</th>
+                                <td>{{ message.response_sent_at.strftime('%d.%m.%Y %H:%M') }}</td>
+                            </tr>
+                            {% endif %}
+                        </table>
                     </div>
-                    <hr>
-                    <div class="row">
-                        <div class="col-12">
-                            <h6 class="font-weight-bold">Содержание сообщения:</h6>
-                            <div class="p-3 bg-light rounded">
-                                {{ message.content|default('Содержание отсутствует')|nl2br }}
-                            </div>
-                        </div>
-                    </div>
                 </div>
+                <div class="col-md-8">
+                    <h5>Тема: {{ message.subject }}</h5>
+                    <div class="p-3 bg-light rounded mb-4">
+                        <p>{{ message.content | nl2br }}</p>
+                    </div>
+                    
+                    {% if message.response %}
+                    <h5>Ваш ответ:</h5>
+                    <div class="p-3 border rounded mb-4 bg-white">
+                        <p>{{ message.response | nl2br }}</p>
+                        <small class="text-muted">Отправлено: {{ message.response_sent_at.strftime('%d.%m.%Y %H:%M') }}</small>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="card-footer">
+            <div class="d-flex justify-content-between align-items-center">
+                <a href="{{ url_for('admin_messages') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left me-1"></i> Назад к списку
+                </a>
+                {% if not message.response %}
+                <a href="{{ url_for('admin_message_reply', message_id=message.id) }}" class="btn btn-primary">
+                    <i class="fas fa-reply me-1"></i> Ответить на сообщение
+                </a>
+                {% endif %}
             </div>
         </div>
     </div>
     
-    {% if message.email %}
-    <div class="row mt-4">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Ответ на сообщение</h6>
+    <!-- Модальное окно подтверждения удаления -->
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteModalLabel">Подтверждение удаления</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="card-body">
-                    <form action="#" method="POST">
-                        <div class="mb-3">
-                            <label for="subject" class="form-label">Тема</label>
-                            <input type="text" class="form-control" id="subject" name="subject" value="Re: {{ message.subject }}" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="content" class="form-label">Текст сообщения</label>
-                            <textarea class="form-control" id="content" name="content" rows="5" required></textarea>
-                        </div>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-paper-plane"></i> Отправить ответ
-                        </button>
+                <div class="modal-body">
+                    <p>Вы уверены, что хотите удалить это сообщение?</p>
+                    <p><strong>Тема:</strong> {{ message.subject }}</p>
+                    <p><strong>От:</strong> {{ message.name }} ({{ message.email }})</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <form action="{{ url_for('admin_message_delete', message_id=message.id) }}" method="post">
+                        <button type="submit" class="btn btn-danger">Удалить</button>
                     </form>
                 </div>
             </div>
         </div>
     </div>
-    {% endif %}
 </div>
 {% endblock %} 

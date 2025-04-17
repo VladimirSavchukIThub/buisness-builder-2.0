@@ -19,6 +19,7 @@ from data_manager import DataManager
 from file_handler import save_file, delete_file
 from datetime import datetime
 from werkzeug.security import generate_password_hash
+from email_sender import send_response_to_message, mail, init_mail, email_blueprint
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)  # для работы с сессиями и flash-сообщениями
@@ -28,6 +29,12 @@ app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URI
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 migrate = Migrate(app, db)
+
+# Инициализация почтового сервиса
+init_mail(app)
+
+# Регистрация blueprint для email сервиса
+app.register_blueprint(email_blueprint, url_prefix='/api/email')
 
 # Инициализация чат-бота
 chatbot = ChatBot()
@@ -839,6 +846,41 @@ def admin_message_delete(message_id):
     flash('Сообщение успешно удалено', 'success')
     
     return redirect(url_for('admin_messages'))
+
+@app.route('/admin/messages/<message_id>/reply', methods=['GET', 'POST'])
+@admin_required
+def admin_message_reply(message_id):
+    """Ответ на сообщение от пользователя."""
+    message = Message.query.get_or_404(message_id)
+    
+    if request.method == 'POST':
+        response_text = request.form.get('response', '').strip()
+        
+        if not response_text:
+            flash('Текст ответа не может быть пустым', 'danger')
+            return render_template('admin/messages/reply.html', message=message)
+        
+        # Отправляем ответ на email пользователя
+        success = send_response_to_message(
+            message_id=message.id,
+            user_email=message.email,
+            user_name=message.name,
+            subject=message.subject,
+            response_text=response_text
+        )
+        
+        if success:
+            # Обновляем данные в БД
+            message.response = response_text
+            message.response_sent_at = datetime.now()
+            db.session.commit()
+            
+            flash('Ответ успешно отправлен', 'success')
+            return redirect(url_for('admin_message_view', message_id=message.id))
+        else:
+            flash('Произошла ошибка при отправке ответа. Проверьте настройки SMTP-сервера.', 'danger')
+    
+    return render_template('admin/messages/reply.html', message=message)
 
 # Маршруты для управления пользователями
 

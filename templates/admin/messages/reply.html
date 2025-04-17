@@ -1,0 +1,90 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Ответ на сообщение{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <h1 class="mt-4">Ответ на сообщение</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a href="{{ url_for('admin_dashboard') }}">Панель управления</a></li>
+        <li class="breadcrumb-item"><a href="{{ url_for('admin_messages') }}">Сообщения</a></li>
+        <li class="breadcrumb-item"><a href="{{ url_for('admin_message_view', message_id=message.id) }}">Просмотр</a></li>
+        <li class="breadcrumb-item active">Ответ</li>
+    </ol>
+    
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-reply me-1"></i>
+            Ответить пользователю {{ message.name }}
+        </div>
+        <div class="card-body">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <h5>Информация о сообщении</h5>
+                    <table class="table table-bordered">
+                        <tr>
+                            <th>От кого:</th>
+                            <td>{{ message.name }}</td>
+                        </tr>
+                        <tr>
+                            <th>Email:</th>
+                            <td>{{ message.email }}</td>
+                        </tr>
+                        <tr>
+                            <th>Тема:</th>
+                            <td>{{ message.subject }}</td>
+                        </tr>
+                        <tr>
+                            <th>Дата:</th>
+                            <td>{{ message.created_at.strftime('%d.%m.%Y %H:%M') }}</td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="col-md-6">
+                    <h5>Текст сообщения</h5>
+                    <div class="p-3 bg-light rounded">
+                        <p>{{ message.content | nl2br }}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <form method="post" action="{{ url_for('admin_message_reply', message_id=message.id) }}">
+                <div class="mb-3">
+                    <label for="response" class="form-label">Ваш ответ</label>
+                    <textarea class="form-control" id="response" name="response" rows="10" required></textarea>
+                    <div class="form-text">
+                        Ответ будет отправлен на email пользователя: <strong>{{ message.email }}</strong>
+                    </div>
+                </div>
+                
+                <div class="d-flex justify-content-between">
+                    <a href="{{ url_for('admin_message_view', message_id=message.id) }}" class="btn btn-secondary">Отмена</a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane me-1"></i> Отправить ответ
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Автоматический фокус на поле ответа
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('response').focus();
+    });
+</script>
+{% endblock %} 
